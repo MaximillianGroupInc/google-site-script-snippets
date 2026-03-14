@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word of the Day</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Roboto:wght@300;400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      max-width: 620px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: #1e3a5f;
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #93b4d8;
+      font-weight: 400;
+    }
+
+    .header-date {
+      font-size: 0.75rem;
+      color: #93b4d8;
+      background: rgba(255,255,255,0.12);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .card-body { padding: 1.75rem 1.75rem 1.5rem; }
+
+    .word-header {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .word {
+      font-family: 'Lora', serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 600;
+      color: #1e3a5f;
+      line-height: 1;
+    }
+
+    .pronunciation {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      color: #4a6a8a;
+    }
+
+    .part-of-speech {
+      display: inline-block;
+      background: #e8f0fe;
+      color: #1a56a0;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+      text-transform: lowercase;
+      font-style: italic;
+      align-self: center;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 1rem 0;
+    }
+
+    .section-title {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.4rem;
+    }
+
+    .definition {
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      color: #1f2937;
+      line-height: 1.7;
+      margin-bottom: 0.8rem;
+    }
+
+    .example {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 0.92rem;
+      color: #4b5563;
+      border-left: 3px solid #d1dfe9;
+      padding-left: 0.8rem;
+      margin-bottom: 0.8rem;
+      line-height: 1.6;
+    }
+
+    .etymology {
+      font-size: 0.82rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    .etymology span { color: #1e3a5f; font-weight: 500; }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.4rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #1e3a5f;
+      color: #e8f0fe;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: 'Roboto', sans-serif;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #2d5282; }
+
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid #93b4d8;
+      border-top-color: #1e3a5f;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading { text-align: center; color: #6b7280; padding: 2.5rem 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <span class="header-label">📖 Word of the Day</span>
+      <span class="header-date" id="today-label"></span>
+    </div>
+    <div class="card-body">
+      <div id="content">
+        <div class="loading"><span class="spinner"></span>Looking up today's word…</div>
+      </div>
+      <div class="actions">
+        <button onclick="nextWord()">Next Word</button>
+        <button onclick="copyWord()">Copy Definition</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // CONFIGURATION
+    // Words rotate daily. Definitions fetched from Free Dictionary API (no key).
+    // API: https://dictionaryapi.dev/
+    // ---------------------------------------------------------------------------
+
+    const WORDS = [
+      { word: 'ephemeral',       pos: 'adjective', pronunciation: '/ɪˈfɛm.ər.əl/',
+        definition: 'Lasting for a very short time; transitory.',
+        example: 'The ephemeral beauty of cherry blossoms reminds us to cherish fleeting moments.',
+        etymology: 'Greek <span>ephemeros</span> ("lasting only a day"), from <span>epi-</span> + <span>hemera</span> (day).' },
+      { word: 'serendipity',     pos: 'noun',      pronunciation: '/ˌsɛr.ənˈdɪp.ɪ.ti/',
+        definition: 'The occurrence and development of events by chance in a happy or beneficial way.',
+        example: 'Finding that old bookshop was a moment of pure serendipity.',
+        etymology: 'Coined by Horace Walpole in 1754 from the Persian fairy tale <span>The Three Princes of Serendip</span>.' },
+      { word: 'petrichor',       pos: 'noun',      pronunciation: '/ˈpɛt.rɪˌkɔːr/',
+        definition: 'The pleasant earthy scent that accompanies the first rain after a long dry spell.',
+        example: 'After months of drought, the petrichor filled the village with a sense of relief.',
+        etymology: 'From Greek <span>petra</span> (stone) + <span>ichor</span> (the fluid that flows through the veins of gods).' },
+      { word: 'sonder',          pos: 'noun',      pronunciation: '/ˈsɒn.dər/',
+        definition: 'The realization that each passerby is living a life as vivid and complex as one\'s own.',
+        example: 'Sitting in the café, she felt sonder wash over her as she watched the crowd.',
+        etymology: 'Coined by John Koenig in <span>The Dictionary of Obscure Sorrows</span>, from German <span>sonder</span> (special).' },
+      { word: 'mellifluous',     pos: 'adjective', pronunciation: '/mɛˈlɪf.lu.əs/',
+        definition: 'Sweet or musical; pleasant to hear.',
+        example: 'Her mellifluous voice drew the audience into perfect silence.',
+        etymology: 'Latin <span>mellifluus</span>: <span>mel</span> (honey) + <span>fluere</span> (to flow).' },
+      { word: 'luminescent',     pos: 'adjective', pronunciation: '/ˌluː.mɪˈnɛs.ənt/',
+        definition: 'Emitting light not caused by heat, as by biological or chemical processes.',
+        example: 'The luminescent plankton lit the ocean waves like scattered blue stars.',
+        etymology: 'Latin <span>lumen</span> (light) + <span>-escent</span> (beginning to be).' },
+      { word: 'hiraeth',         pos: 'noun',      pronunciation: '/ˈhɪr.aɪ̯θ/',
+        definition: 'A deep longing for something—especially a home—to which one cannot return.',
+        example: 'After years abroad, he felt a profound hiraeth for the hills of his childhood.',
+        etymology: 'Welsh: <span>hir</span> (long) + <span>aeth</span> (gone, grief, longing).' },
+      { word: 'numinous',        pos: 'adjective', pronunciation: '/ˈnjuː.mɪ.nəs/',
+        definition: 'Having a strong religious or spiritual quality; indicating the presence of a divinity.',
+        example: 'Standing in the ancient forest, she felt a numinous awe impossible to describe.',
+        etymology: 'Latin <span>numen</span> (divine power or will).' },
+      { word: 'ineffable',       pos: 'adjective', pronunciation: '/ɪˈnɛf.ə.bəl/',
+        definition: 'Too great or extreme to be expressed in words.',
+        example: 'The ineffable joy of holding her newborn child brought tears to her eyes.',
+        etymology: 'Latin <span>ineffabilis</span>: <span>in-</span> (not) + <span>effari</span> (to utter).' },
+      { word: 'lacuna',          pos: 'noun',      pronunciation: '/ləˈkjuː.nə/',
+        definition: 'A missing portion in a book, manuscript, argument, or other piece of work; a gap.',
+        example: 'Scholars debated the significant lacuna in the ancient manuscript.',
+        etymology: 'Latin <span>lacuna</span> (pit, pool, gap), related to <span>lacus</span> (lake).' },
+      { word: 'halcyon',         pos: 'adjective', pronunciation: '/ˈhæl.si.ɒn/',
+        definition: 'Denoting a period of time in the past that was idyllically happy and peaceful.',
+        example: 'She often reminisced about those halcyon summers at the lake house.',
+        etymology: 'Greek <span>alkyon</span> (kingfisher), which myth said could calm winter seas to nest.' },
+      { word: 'melancholy',      pos: 'noun',      pronunciation: '/ˈmɛl.ənˌkɒl.i/',
+        definition: 'A feeling of pensive sadness, typically with no obvious cause.',
+        example: 'Autumn always brought with it a gentle melancholy he could not quite explain.',
+        etymology: 'Greek <span>melancholia</span>: <span>melas</span> (black) + <span>kholē</span> (bile), from humour theory.' },
+      { word: 'perspicacious',   pos: 'adjective', pronunciation: '/ˌpɜː.spɪˈkeɪ.ʃəs/',
+        definition: 'Having a ready insight into things; shrewd.',
+        example: 'Her perspicacious analysis of the data revealed a flaw no one else had noticed.',
+        etymology: 'Latin <span>perspicax</span> (sharp-sighted), from <span>perspicere</span> (to look through clearly).' },
+      { word: 'ubiquitous',      pos: 'adjective', pronunciation: '/juːˈbɪk.wɪ.təs/',
+        definition: 'Present, appearing, or found everywhere.',
+        example: 'Smartphones have become ubiquitous in modern daily life.',
+        etymology: 'Latin <span>ubique</span> (everywhere) + <span>-ous</span>.' },
+      { word: 'cerulean',        pos: 'adjective', pronunciation: '/sɪˈruː.li.ən/',
+        definition: 'Deep sky blue in color.',
+        example: 'The cerulean waters of the Aegean stretched endlessly to the horizon.',
+        etymology: 'Latin <span>caeruleus</span> (sky blue, dark blue), related to <span>caelum</span> (sky).' },
+      { word: 'diaphanous',      pos: 'adjective', pronunciation: '/daɪˈæf.ə.nəs/',
+        definition: 'Light, delicate, and translucent.',
+        example: 'Her diaphanous silk gown caught every breath of the summer breeze.',
+        etymology: 'Greek <span>diaphanes</span>: <span>dia-</span> (through) + <span>phainein</span> (to show).' },
+      { word: 'ethereal',        pos: 'adjective', pronunciation: '/ɪˈθɪə.ri.əl/',
+        definition: 'Extremely delicate and light in a way that seems too perfect for this world.',
+        example: 'The mountain summit was wrapped in an ethereal mist at dawn.',
+        etymology: 'Greek <span>aither</span> (upper air, the pure bright upper atmosphere).' },
+      { word: 'sagacious',       pos: 'adjective', pronunciation: '/səˈɡeɪ.ʃəs/',
+        definition: 'Having or showing keen mental discernment and good judgment.',
+        example: 'The sagacious elder offered counsel that guided the community through the crisis.',
+        etymology: 'Latin <span>sagax</span> (quick-scented, keen), from <span>sagire</span> (to perceive keenly).' },
+      { word: 'apricity',        pos: 'noun',      pronunciation: '/əˈprɪs.ɪ.ti/',
+        definition: 'The warmth of the sun in winter.',
+        example: 'She sat by the window, savoring the apricity on her face during the cold afternoon.',
+        etymology: 'Latin <span>apricus</span> (exposed to the sun, warmed by the sun).' },
+      { word: 'eudaimonia',      pos: 'noun',      pronunciation: '/juːˌdaɪˈməʊ.ni.ə/',
+        definition: 'Human flourishing, happiness, and well-being; Aristotle\'s concept of the highest human good.',
+        example: 'True eudaimonia, he argued, comes not from pleasure but from virtuous activity.',
+        etymology: 'Greek: <span>eu</span> (good) + <span>daimon</span> (spirit, genius).' },
+      { word: 'soliloquy',       pos: 'noun',      pronunciation: '/səˈlɪl.ə.kwi/',
+        definition: 'An act of speaking one\'s thoughts aloud when by oneself or regardless of any hearers.',
+        example: 'Hamlet\'s soliloquy beginning "To be, or not to be" is perhaps the most famous in literature.',
+        etymology: 'Late Latin <span>soliloquium</span>: <span>solus</span> (alone) + <span>loqui</span> (to speak).' },
+      { word: 'sempiternal',     pos: 'adjective', pronunciation: '/ˌsɛm.pɪˈtɜː.nəl/',
+        definition: 'Eternal and unchanging; everlasting.',
+        example: 'He wrote of the sempiternal nature of love outlasting all human endeavour.',
+        etymology: 'Latin <span>semper</span> (always) + <span>aeternus</span> (eternal).' },
+      { word: 'tenacity',        pos: 'noun',      pronunciation: '/tɪˈnæs.ɪ.ti/',
+        definition: 'The quality or fact of being very determined; persistence.',
+        example: 'Her tenacity in the face of rejection eventually led to breakthrough success.',
+        etymology: 'Latin <span>tenacitas</span>, from <span>tenax</span> (holding fast), from <span>tenere</span> (to hold).' },
+      { word: 'loquacious',      pos: 'adjective', pronunciation: '/ləˈkweɪ.ʃəs/',
+        definition: 'Tending to talk a great deal; very chatty.',
+        example: 'The loquacious guide filled every moment of the tour with fascinating stories.',
+        etymology: 'Latin <span>loquax</span> (talkative), from <span>loqui</span> (to speak).' },
+      { word: 'zenith',          pos: 'noun',      pronunciation: '/ˈzɛn.ɪθ/',
+        definition: 'The time at which something is most powerful or successful; the highest point.',
+        example: 'The Renaissance represented the zenith of Florence\'s cultural influence.',
+        etymology: 'Arabic <span>samt ar-ras</span> (direction of the head), via Old Spanish <span>zenit</span>.' },
+      { word: 'bespoke',         pos: 'adjective', pronunciation: '/bɪˈspəʊk/',
+        definition: 'Made for a particular customer or user; custom-made.',
+        example: 'He wore a bespoke suit tailored to his exact measurements on Savile Row.',
+        etymology: 'Past tense of <span>bespeak</span> ("to speak for / order in advance"), from Old English <span>besprecan</span>.' },
+      { word: 'sojourn',         pos: 'noun',      pronunciation: '/ˈsɒdʒ.ɜːn/',
+        definition: 'A temporary stay.',
+        example: 'Her two-week sojourn in Paris changed how she thought about art forever.',
+        etymology: 'Old French <span>sojorner</span>, from Latin <span>sub-</span> (under) + <span>diurnum</span> (day).' },
+      { word: 'resilience',      pos: 'noun',      pronunciation: '/rɪˈzɪl.i.əns/',
+        definition: 'The capacity to recover quickly from difficulties; toughness.',
+        example: 'The community\'s resilience after the flood inspired people across the country.',
+        etymology: 'Latin <span>resilire</span> (to leap back), from <span>re-</span> + <span>salire</span> (to jump).' },
+      { word: 'abscond',         pos: 'verb',      pronunciation: '/æbˈskɒnd/',
+        definition: 'To leave hurriedly and secretly, typically to escape from custody or avoid consequences.',
+        example: 'The cashier absconded with the weekend\'s takings before anyone noticed.',
+        etymology: 'Latin <span>abscondere</span>: <span>ab-</span> (away) + <span>condere</span> (to put, hide).' },
+      { word: 'juxtapose',       pos: 'verb',      pronunciation: '/ˌdʒʌk.stəˈpəʊz/',
+        definition: 'Place or deal with close together for contrasting effect.',
+        example: 'The exhibit juxtaposes ancient cave paintings with digital art.',
+        etymology: 'French <span>juxtaposer</span>: Latin <span>juxta</span> (next to) + French <span>poser</span> (to place).' },
+    ];
+
+    let currentIndex = 0;
+
+    const MONTHS_FULL = ['January','February','March','April','May','June',
+                         'July','August','September','October','November','December'];
+    const today = new Date();
+    document.getElementById('today-label').textContent =
+      `${MONTHS_FULL[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
+
+    function getDayIndex() {
+      const doy = Math.floor((Date.now() - new Date(today.getFullYear(), 0, 0)) / 86400000);
+      return doy % WORDS.length;
+    }
+
+    function renderWord(entry) {
+      document.getElementById('content').innerHTML = `
+        <div class="word-header">
+          <span class="word">${entry.word}</span>
+          <span class="pronunciation">${entry.pronunciation}</span>
+          <span class="part-of-speech">${entry.pos}</span>
+        </div>
+        <div class="divider"></div>
+        <div class="section-title">Definition</div>
+        <p class="definition">${entry.definition}</p>
+        <div class="section-title">Example</div>
+        <p class="example">"${entry.example}"</p>
+        <div class="section-title">Etymology</div>
+        <p class="etymology">${entry.etymology}</p>
+      `;
+    }
+
+    function nextWord() {
+      currentIndex = (currentIndex + 1) % WORDS.length;
+      renderWord(WORDS[currentIndex]);
+    }
+
+    function copyWord() {
+      const entry = WORDS[currentIndex];
+      const text  = `Word of the Day: ${entry.word} (${entry.pos})\n${entry.definition}\n\nExample: "${entry.example}"`;
+      navigator.clipboard
+        ? navigator.clipboard.writeText(text).then(() => alert('Copied!'))
+        : alert(text);
+    }
+
+    // Initialise to today's word
+    currentIndex = getDayIndex();
+    renderWord(WORDS[currentIndex]);
+  </script>
+</body>
+</html>

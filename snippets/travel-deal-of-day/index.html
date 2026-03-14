@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Deal of the Day</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(160deg, #0891b2 0%, #0e7490 50%, #164e63 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 640px;
+      width: 100%;
+      box-shadow: 0 28px 64px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .hero {
+      height: 180px;
+      position: relative;
+      overflow: hidden;
+      background: #0891b2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-emoji {
+      font-size: 5rem;
+      opacity: 0.35;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1rem 1.4rem;
+    }
+
+    .destination-name {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .destination-region {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.8);
+      margin-top: 0.2rem;
+    }
+
+    .card-body { padding: 1.5rem 1.5rem 1.25rem; }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .badge-deal   { background: #ecfdf5; color: #047857; }
+    .badge-time   { background: #eff6ff; color: #1d4ed8; }
+    .badge-budget { background: #fff7ed; color: #c2410c; }
+    .badge-style  { background: #fdf4ff; color: #7c3aed; }
+
+    .description {
+      font-size: clamp(0.88rem, 2vw, 1rem);
+      color: #374151;
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.2rem;
+    }
+
+    @media (max-width: 400px) {
+      .info-grid { grid-template-columns: 1fr; }
+    }
+
+    .info-item {
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 0.7rem 0.8rem;
+    }
+
+    .info-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.2rem;
+    }
+
+    .info-value {
+      font-size: 0.9rem;
+      color: #111827;
+      font-weight: 400;
+    }
+
+    .tip-block {
+      background: #f0f9ff;
+      border-left: 4px solid #0891b2;
+      padding: 0.8rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1.2rem;
+    }
+
+    .tip-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #0891b2;
+      margin-bottom: 0.3rem;
+    }
+
+    .tip-text {
+      font-size: 0.88rem;
+      color: #1e3a5f;
+      line-height: 1.5;
+    }
+
+    .attractions {
+      margin-bottom: 0.5rem;
+    }
+
+    .attractions-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.4rem;
+    }
+
+    .attraction-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .attraction-tag {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f3f4f6;
+    }
+
+    button {
+      flex: 1;
+      min-width: 120px;
+      background: #0891b2;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      transition: background 0.2s;
+      text-align: center;
+    }
+
+    button:hover { background: #0e7490; }
+
+    .btn-outline {
+      background: #fff;
+      color: #0891b2;
+      border: 1px solid #0891b2;
+    }
+
+    .btn-outline:hover { background: #e0f2fe; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="hero" id="hero">
+      <div class="hero-emoji" id="hero-emoji">🌏</div>
+      <div class="hero-overlay">
+        <div class="destination-name" id="dest-name">Loading…</div>
+        <div class="destination-region" id="dest-region"></div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="badges" id="badges"></div>
+      <p class="description" id="description"></p>
+
+      <div class="info-grid" id="info-grid"></div>
+
+      <div class="tip-block" id="tip-block" style="display:none">
+        <div class="tip-label">✈️ Travel Tip</div>
+        <div class="tip-text" id="tip-text"></div>
+      </div>
+
+      <div class="attractions" id="attractions-wrap" style="display:none">
+        <div class="attractions-label">Must-See Experiences</div>
+        <div class="attraction-tags" id="attraction-tags"></div>
+      </div>
+
+      <div class="actions">
+        <button onclick="nextDestination()">Next Destination</button>
+        <a id="flights-link" href="https://www.google.com/travel/flights" target="_blank" rel="noopener noreferrer" style="flex:1;min-width:120px;text-decoration:none">
+          <button class="btn-outline" style="width:100%">Search Flights</button>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // TRAVEL DESTINATIONS — purely client-side, no API required.
+    // Rotates daily so all visitors see the same destination each day.
+    //
+    // NOTE: For real-time flight pricing, integrate with Skyscanner, Expedia,
+    //       Google Flights, or Amadeus APIs.  See README for details.
+    // ---------------------------------------------------------------------------
+    const DESTINATIONS = [
+      {
+        emoji: '🏛️', name: 'Lisbon', region: 'Portugal · Western Europe',
+        budget: 'Budget-Friendly', style: 'City Break',
+        bestTime: 'Apr – Jun & Sep – Oct',
+        avgFlight: 'From $400 (US East Coast)',
+        description: 'Lisbon enchants with its golden light, steep cobblestone hills, vintage yellow trams, and world-class pastéis de nata. It\'s one of Europe\'s most affordable and visually stunning capitals.',
+        tip: 'Get a 24-hour Viva Viagem transit card to ride trams, buses, and the metro unlimited. Explore the Alfama district on foot at dawn for the best photos.',
+        attractions: ['Alfama District', 'Jerónimos Monastery', 'Belém Tower', 'Fado Music', 'LX Factory', 'Time Out Market', 'Sintra Day Trip'],
+        flightSearch: 'https://www.google.com/travel/flights/search?tfs=CBwQAhopagcIARIDTFNQEgoyMDI1LTA0LTAxcBKIAQFoB0gBUgNMSVNAAVgBcAGCAQsI____________AQAB'
+      },
+      {
+        emoji: '🏯', name: 'Kyoto', region: 'Japan · East Asia',
+        budget: 'Mid-Range', style: 'Cultural Immersion',
+        bestTime: 'Mar – May & Oct – Nov',
+        avgFlight: 'From $700 (US West Coast)',
+        description: 'Kyoto preserves Japan\'s ancient soul — over 1,600 Buddhist temples, Zen gardens, geisha districts, and the ethereal Arashiyama bamboo grove. It\'s a city where centuries-old traditions are still lived daily.',
+        tip: 'Book accommodation in a traditional ryokan at least 3 months ahead for cherry blossom season. An IC card (Suica or Icoca) works on all trains and buses in the Kansai region.',
+        attractions: ['Fushimi Inari Shrine', 'Arashiyama Bamboo Grove', 'Kinkaku-ji (Golden Pavilion)', 'Gion District', 'Nishiki Market', 'Philosopher\'s Path', 'Tea Ceremony'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🌸', name: 'Chiang Mai', region: 'Thailand · Southeast Asia',
+        budget: 'Budget-Friendly', style: 'Backpacker & Wellness',
+        bestTime: 'Nov – Feb',
+        avgFlight: 'From $600 (US)',
+        description: 'Chiang Mai is Thailand\'s cultural capital — a city of 300 temples, night bazaars, elephant sanctuaries, and some of the best street food on the planet. Living costs are remarkably low.',
+        tip: 'Rent a motorbike (with a valid international licence) to explore the surrounding mountains. Visit Doi Inthanon National Park — Thailand\'s highest peak — for a half-day trip.',
+        attractions: ['Doi Suthep Temple', 'Night Bazaar', 'Ethical Elephant Sanctuary', 'Thai Cooking Class', 'Doi Inthanon Park', 'Old City Temples', 'Sunday Walking Street'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🌡️', name: 'Medellín', region: 'Colombia · South America',
+        budget: 'Budget-Friendly', style: 'Urban Adventure',
+        bestTime: 'Dec – Mar & Jul – Aug',
+        avgFlight: 'From $350 (US)',
+        description: 'Once infamous, now inspiring — Medellín earned the title of "World\'s Most Innovative City." With an eternal spring climate, vibrant street art, breathtaking cable cars, and extraordinary food, it\'s South America\'s most transformed city.',
+        tip: 'The Metrocable (cable car) is part of the city\'s metro system and gives stunning views of the hillside comunas. Take Line J to Parque Arví for a lush nature escape.',
+        attractions: ['Parque Arví', 'Metrocable Line J', 'Plaza Botero', 'El Poblado', 'Guatapé Day Trip', 'Food Tours', 'Mercado del Río'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🛁', name: 'Budapest', region: 'Hungary · Central Europe',
+        budget: 'Budget-Friendly', style: 'City Break',
+        bestTime: 'Apr – Jun & Sep – Oct',
+        avgFlight: 'From $450 (US East Coast)',
+        description: 'Budapest straddles the Danube with two personalities — hilly Buda and flat Pest — united by grand bridges and extraordinary thermal baths. Its "ruin bars" set inside abandoned buildings are legendary.',
+        tip: 'Get a Budapest Card for unlimited public transport and free entry to major museums. Spa-hopping between Széchenyi and Gellért baths is an essential Budapest ritual.',
+        attractions: ['Széchenyi Thermal Bath', 'Hungarian Parliament', 'Fisherman\'s Bastion', 'Ruin Bars', 'Buda Castle', 'Great Market Hall', 'Danube Cruise'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🍷', name: 'Tbilisi', region: 'Georgia · Caucasus',
+        budget: 'Budget-Friendly', style: 'Hidden Gem',
+        bestTime: 'May – Jun & Sep – Oct',
+        avgFlight: 'From $700 (US)',
+        description: 'Tbilisi is Europe\'s best-kept secret — a city of sulphur baths, ancient cave monasteries, colourful balconied houses, and arguably the world\'s oldest wine culture (8,000 years). Costs are 60% lower than Western Europe.',
+        tip: 'Wine is served in qvevri (ancient clay amphoras). Take a day trip to Mtskheta, Georgia\'s ancient capital, just 20 km away and a UNESCO World Heritage site.',
+        attractions: ['Old Town Abanotubani', 'Narikala Fortress', 'Georgian Wine Tasting', 'Mtskheta UNESCO Site', 'National Museum', 'Vernissage Market', 'Kazbegi Day Trip'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🏔️', name: 'Cappadocia', region: 'Turkey · Central Anatolia',
+        budget: 'Mid-Range', style: 'Unique Landscape',
+        bestTime: 'Apr – Jun & Sep – Nov',
+        avgFlight: 'From $600 (US)',
+        description: 'Cappadocia\'s fairy chimneys, cave hotels carved directly into volcanic rock, and sunrise hot-air balloon flights create one of the most surreal landscapes on Earth. An absolute bucket-list destination.',
+        tip: 'Book your hot-air balloon flight at least 2 weeks in advance; Göreme-based operators book out fast in high season. Ride it at sunrise — the colours over the valleys are unforgettable.',
+        attractions: ['Hot Air Balloon at Sunrise', 'Göreme Open-Air Museum', 'Underground City Derinkuyu', 'Ihlara Valley Hike', 'Cave Hotel Stay', 'ATV Riding', 'Devrent Valley'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🌊', name: 'Porto', region: 'Portugal · Northern Iberia',
+        budget: 'Budget-Friendly', style: 'City Break',
+        bestTime: 'May – Sep',
+        avgFlight: 'From $380 (US East Coast)',
+        description: 'Porto rewards wanderers with its dramatic hillside setting, terracotta rooftops, ornate azulejo tile facades, and the world\'s finest Port wine cellars across the Douro River in Vila Nova de Gaia.',
+        tip: 'Take the Douro Valley wine train from São Bento station for a half-day of stunning scenery and world-class wine. The Livraria Lello bookshop (1906) is a must — arrive early to beat the queues.',
+        attractions: ['Livraria Lello Bookshop', 'Port Wine Cellars', 'Douro Valley Train', 'Ribeira Waterfront', 'São Bento Station', 'Palácio da Bolsa', 'Foz do Douro Sunset'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🏖️', name: 'Zanzibar', region: 'Tanzania · East Africa',
+        budget: 'Mid-Range', style: 'Beach & Culture',
+        bestTime: 'Jun – Oct & Dec – Feb',
+        avgFlight: 'From $800 (US)',
+        description: 'Zanzibar is an island of contrasts — powdery white beaches and turquoise lagoons alongside the UNESCO-listed Arab-Swahili labyrinth of Stone Town. Spice tours and snorkelling with sea turtles are daily offerings.',
+        tip: 'Stay in Stone Town for 1–2 nights to experience its magic at night — the day tourists leave, the ancient city reclaims itself. Swim with dolphins off Kizimkazi village.',
+        attractions: ['Stone Town UNESCO City', 'Nungwi Beach', 'Spice Tour', 'Swim with Dolphins', 'Prison Island Tortoises', 'Jozani Forest Colobus', 'Forodhani Night Market'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🏟️', name: 'Athens', region: 'Greece · Mediterranean',
+        budget: 'Budget-Friendly', style: 'History & Beaches',
+        bestTime: 'Apr – Jun & Sep – Oct',
+        avgFlight: 'From $480 (US East Coast)',
+        description: 'Athens layers 3,500 years of history with a vibrant street food scene, buzzing nightlife, and proximity to stunning Aegean islands. The Acropolis at sunset is one of history\'s most powerful views.',
+        tip: 'Buy the Acropolis multi-site ticket (€30) — it covers 7 archaeological sites including the Agora and Theatre of Dionysus. Visit the Acropolis Museum to understand what the Parthenon sculptures meant in context.',
+        attractions: ['Acropolis & Parthenon', 'Acropolis Museum', 'Ancient Agora', 'Monastiraki', 'Cape Sounion', 'Athens Food Tour', 'Day Trip to Aegina Island'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🌮', name: 'Oaxaca', region: 'Mexico · Southern Mexico',
+        budget: 'Budget-Friendly', style: 'Food & Culture',
+        bestTime: 'Oct – Apr',
+        avgFlight: 'From $280 (US)',
+        description: 'Oaxaca is Mexico\'s culinary and cultural soul. Famous for its complex mole sauces, smoky mezcal, vibrant indigenous markets, Day of the Dead festivals, and extraordinary pre-Columbian ruins at Monte Albán.',
+        tip: 'Take a cooking class that includes a market tour — local chefs will show you how to select ingredients and prepare mole negro from scratch. Book 3 days before Día de los Muertos (Nov 1-2) for a life-changing experience.',
+        attractions: ['Monte Albán Ruins', 'Mole Cooking Class', 'Mezcal Distillery Tour', 'Mercado Benito Juárez', 'Hierve el Agua', 'Day of the Dead', 'Tule Tree'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🎭', name: 'Havana', region: 'Cuba · Caribbean',
+        budget: 'Mid-Range', style: 'Time Capsule',
+        bestTime: 'Nov – Apr',
+        avgFlight: 'From $350 (US South)',
+        description: 'Havana is living history — vintage 1950s American cars cruise past crumbling colonial grandeur, salsa rhythms fill the streets, and impossibly strong coffee costs cents. Visit before it changes.',
+        tip: 'Bring US dollars (or better, euros) in cash — US credit/debit cards often don\'t work. Book a casa particular (local home-stay) instead of a hotel for an authentic experience and lower prices.',
+        attractions: ['Old Havana UNESCO District', 'Malecón Seawall', 'Tropicana Cabaret', 'Hemingway\'s Finca Vigía', 'Classic Car Tour', 'Salsa Lesson', 'Viñales Valley Day Trip'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🏰', name: 'Tallinn', region: 'Estonia · Northern Europe',
+        budget: 'Budget-Friendly', style: 'Medieval History',
+        bestTime: 'Jun – Aug',
+        avgFlight: 'From $500 (US)',
+        description: 'Tallinn\'s medieval Old Town is the best-preserved in Northern Europe — limestone towers, Gothic town hall, and cobblestone streets unchanged since the 13th century. Estonia is also one of the world\'s most digitally advanced societies.',
+        tip: 'The Old Town is compact and walkable in 4 hours. For a panoramic view, climb Toompea Hill at dusk. Day-trip to Helsinki by fast ferry (2 hours each way) for a Nordic contrast.',
+        attractions: ['Town Hall Square', 'Toompea Castle', 'Estonian Open-Air Museum', 'Kadriorg Palace', 'Tallinn Christmas Market', 'Helsinki Day Ferry', 'St. Olaf\'s Church Tower'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🌋', name: 'Reykjavik', region: 'Iceland · North Atlantic',
+        budget: 'Expensive', style: 'Nature & Adventure',
+        bestTime: 'Jun – Aug (midnight sun) or Sep – Mar (Northern Lights)',
+        avgFlight: 'From $450 (US East Coast)',
+        description: 'Iceland offers encounters with raw, primal nature — erupting geysers, thundering waterfalls, black sand beaches, and the Northern Lights. The midnight sun of summer or the aurora borealis of winter both deliver magic.',
+        tip: 'Rent a car and drive the Golden Circle (Þingvellir, Geysir, Gullfoss) as a day trip from Reykjavik. For Northern Lights, head 20 km outside the city on clear, dark nights in winter.',
+        attractions: ['Northern Lights', 'Blue Lagoon', 'Golden Circle', 'Jökulsárlón Glacier Lagoon', 'Snæfellsnes Peninsula', 'Whale Watching', 'Midnight Sun Hiking'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+      {
+        emoji: '🎋', name: 'Luang Prabang', region: 'Laos · Southeast Asia',
+        budget: 'Budget-Friendly', style: 'Spiritual & Slow Travel',
+        bestTime: 'Oct – Apr',
+        avgFlight: 'From $700 (US)',
+        description: 'Luang Prabang is Southeast Asia\'s most serene city — a UNESCO World Heritage town of gilded temples, saffron-robed monks, the sacred Kuang Si waterfall, and the slow Mekong flowing at its doorstep.',
+        tip: 'Wake at 5:30 AM to witness the alms-giving ceremony (tak bat) — hundreds of monks walk in silent procession collecting offerings. Observe respectfully from a distance; it is a genuine religious practice, not a performance.',
+        attractions: ['Alms-Giving Ceremony', 'Kuang Si Waterfall', 'Pak Ou Caves', 'Mekong Sunset Cruise', 'Hmong Night Market', 'Mount Phousi', 'Elephant Conservation'],
+        flightSearch: 'https://www.google.com/travel/flights'
+      },
+    ];
+
+    let currentIndex = 0;
+
+    function getDayIndex() {
+      const today = new Date();
+      return Math.floor((Date.now() - new Date(today.getFullYear(), 0, 0)) / 86400000) % DESTINATIONS.length;
+    }
+
+    function renderDestination(dest) {
+      document.getElementById('hero-emoji').textContent    = dest.emoji;
+      document.getElementById('dest-name').textContent     = dest.name;
+      document.getElementById('dest-region').textContent   = dest.region;
+      document.getElementById('description').textContent   = dest.description;
+
+      // Badges
+      document.getElementById('badges').innerHTML = [
+        `<span class="badge badge-budget">💰 ${dest.budget}</span>`,
+        `<span class="badge badge-style">🧳 ${dest.style}</span>`,
+        `<span class="badge badge-time">📅 Best: ${dest.bestTime}</span>`,
+        `<span class="badge badge-deal">✈️ ${dest.avgFlight}</span>`,
+      ].join('');
+
+      // Info grid
+      document.getElementById('info-grid').innerHTML = `
+        <div class="info-item">
+          <div class="info-label">Best Season</div>
+          <div class="info-value">${dest.bestTime}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Average Flight</div>
+          <div class="info-value">${dest.avgFlight}</div>
+        </div>
+      `;
+
+      // Tip
+      if (dest.tip) {
+        document.getElementById('tip-text').textContent  = dest.tip;
+        document.getElementById('tip-block').style.display = 'block';
+      }
+
+      // Attractions
+      if (dest.attractions && dest.attractions.length) {
+        document.getElementById('attraction-tags').innerHTML =
+          dest.attractions.map(a => `<span class="attraction-tag">${a}</span>`).join('');
+        document.getElementById('attractions-wrap').style.display = 'block';
+      }
+
+      // Flight search link
+      document.getElementById('flights-link').href =
+        dest.flightSearch || 'https://www.google.com/travel/flights';
+    }
+
+    function nextDestination() {
+      currentIndex = (currentIndex + 1) % DESTINATIONS.length;
+      renderDestination(DESTINATIONS[currentIndex]);
+    }
+
+    currentIndex = getDayIndex();
+    renderDestination(DESTINATIONS[currentIndex]);
+  </script>
+</body>
+</html>

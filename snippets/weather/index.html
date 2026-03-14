@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Widget</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(160deg, #1e3a5f 0%, #1a73e8 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      color: #fff;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 1rem 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .header-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .location-form {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .location-input {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      padding: 0.35rem 0.7rem;
+      color: #fff;
+      font-size: 0.82rem;
+      font-family: 'Roboto', sans-serif;
+      outline: none;
+      width: 140px;
+    }
+
+    .location-input::placeholder { color: rgba(255,255,255,0.5); }
+
+    .location-input:focus { border-color: rgba(255,255,255,0.6); }
+
+    .btn-search {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      color: #fff;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-family: 'Roboto', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .btn-search:hover { background: rgba(255,255,255,0.3); }
+
+    .card-body { padding: 1.75rem 1.75rem 1.5rem; }
+
+    /* ---- Current weather ---- */
+    .current {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .weather-icon { font-size: 5rem; line-height: 1; }
+
+    .temp-block { flex: 1; min-width: 120px; }
+
+    .temp {
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-weight: 300;
+      line-height: 1;
+    }
+
+    .temp-unit {
+      font-size: 1.5rem;
+      vertical-align: super;
+      opacity: 0.6;
+    }
+
+    .feels-like { font-size: 0.85rem; opacity: 0.7; margin-top: 0.2rem; }
+
+    .condition-block { text-align: right; }
+
+    .condition {
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-weight: 500;
+      line-height: 1.2;
+    }
+
+    .city-name {
+      font-size: 1rem;
+      opacity: 0.75;
+      margin-top: 0.2rem;
+    }
+
+    /* ---- Stats row ---- */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 0.7rem 0.8rem;
+      text-align: center;
+    }
+
+    .stat-icon  { font-size: 1.3rem; }
+    .stat-value { font-size: 0.95rem; font-weight: 500; margin-top: 0.2rem; }
+    .stat-label { font-size: 0.65rem; opacity: 0.65; margin-top: 0.1rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* ---- Forecast ---- */
+    .forecast-row {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.2rem;
+    }
+
+    .forecast-row::-webkit-scrollbar { height: 3px; }
+    .forecast-row::-webkit-scrollbar-track { background: transparent; }
+    .forecast-row::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 2px; }
+
+    .forecast-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 0.6rem 0.7rem;
+      text-align: center;
+      min-width: 65px;
+      flex-shrink: 0;
+    }
+
+    .f-day    { font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.05em; }
+    .f-icon   { font-size: 1.4rem; margin: 0.3rem 0; }
+    .f-hi     { font-size: 0.9rem; font-weight: 500; }
+    .f-lo     { font-size: 0.75rem; opacity: 0.6; }
+
+    /* ---- Unit toggle ---- */
+    .toggle-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1rem;
+      gap: 0.5rem;
+    }
+
+    .unit-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.6);
+      padding: 0.3rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: 'Roboto', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .unit-btn.active {
+      background: rgba(255,255,255,0.25);
+      color: #fff;
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    /* ---- States ---- */
+    .loading-state, .error-state, .setup-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      opacity: 0.75;
+    }
+
+    .setup-state h3 { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.5rem; }
+    .setup-state p  { font-size: 0.85rem; opacity: 0.75; line-height: 1.6; }
+
+    .spinner {
+      display: inline-block;
+      width: 24px; height: 24px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-bottom: 0.5rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .api-key-note {
+      font-size: 0.72rem;
+      opacity: 0.55;
+      margin-top: 1rem;
+      line-height: 1.6;
+    }
+
+    .api-key-note a { color: #93c5fd; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <span class="header-label">☁️ Weather</span>
+      <div class="location-form">
+        <input class="location-input" id="city-input" type="text" placeholder="City, Country"
+               value="" onkeydown="if(event.key==='Enter') fetchWeather()" />
+        <button class="btn-search" onclick="fetchWeather()">Go</button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div id="weather-content">
+        <div class="setup-state">
+          <div>☁️</div>
+          <h3>Enter a city above to get started</h3>
+          <p>This widget uses the OpenWeatherMap API.<br>See configuration notes below.</p>
+          <div class="api-key-note">
+            To show live weather, replace <code>YOUR_API_KEY</code> in the script below with a free key from
+            <a href="https://openweathermap.org/api" target="_blank" rel="noopener noreferrer">openweathermap.org</a>
+            (free tier: 1,000 calls/day).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // CONFIGURATION — edit these values before deploying
+    // ---------------------------------------------------------------------------
+    const API_KEY      = 'YOUR_API_KEY';       // Get free key at https://openweathermap.org/api
+    const DEFAULT_CITY = '';                    // e.g. 'London,UK' — leave blank to use geolocation
+    const DEFAULT_UNIT = 'imperial';            // 'imperial' (°F) or 'metric' (°C)
+    // ---------------------------------------------------------------------------
+
+    let currentUnit   = DEFAULT_UNIT;
+    let currentCity   = DEFAULT_CITY;
+    let lastWeather   = null;
+    let lastForecast  = null;
+
+    const WEATHER_ICONS = {
+      '01d':'☀️','01n':'🌙','02d':'⛅','02n':'🌙','03d':'☁️','03n':'☁️',
+      '04d':'☁️','04n':'☁️','09d':'🌧️','09n':'🌧️','10d':'🌦️','10n':'🌧️',
+      '11d':'⛈️','11n':'⛈️','13d':'❄️','13n':'❄️','50d':'🌫️','50n':'🌫️'
+    };
+
+    const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    function unitLabel()  { return currentUnit === 'imperial' ? '°F' : '°C'; }
+    function speedLabel() { return currentUnit === 'imperial' ? 'mph' : 'm/s'; }
+
+    async function fetchWeather() {
+      const cityInput = document.getElementById('city-input').value.trim();
+      if (cityInput) currentCity = cityInput;
+      if (!currentCity) return tryGeolocation();
+
+      if (API_KEY === 'YOUR_API_KEY') {
+        showApiKeyWarning();
+        return;
+      }
+
+      showLoading();
+      try {
+        const [wRes, fRes] = await Promise.all([
+          fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(currentCity)}&appid=${API_KEY}&units=${currentUnit}`),
+          fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(currentCity)}&appid=${API_KEY}&units=${currentUnit}&cnt=40`)
+        ]);
+
+        if (!wRes.ok) throw new Error(wRes.status === 404 ? 'City not found' : 'Weather fetch failed');
+        lastWeather  = await wRes.json();
+        lastForecast = await fRes.json();
+        renderWeather(lastWeather, lastForecast);
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    async function fetchWeatherByCoords(lat, lon) {
+      if (API_KEY === 'YOUR_API_KEY') {
+        showApiKeyWarning();
+        return;
+      }
+      showLoading();
+      try {
+        const [wRes, fRes] = await Promise.all([
+          fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${currentUnit}`),
+          fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${currentUnit}&cnt=40`)
+        ]);
+        if (!wRes.ok) throw new Error('Weather fetch failed');
+        lastWeather  = await wRes.json();
+        lastForecast = await fRes.json();
+        document.getElementById('city-input').value = `${lastWeather.name},${lastWeather.sys.country}`;
+        renderWeather(lastWeather, lastForecast);
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    function tryGeolocation() {
+      if (!navigator.geolocation) { showSetup(); return; }
+      showLoading();
+      navigator.geolocation.getCurrentPosition(
+        pos => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude),
+        ()  => showSetup()
+      );
+    }
+
+    function renderWeather(w, f) {
+      const iconCode = w.weather[0].icon;
+      const icon     = WEATHER_ICONS[iconCode] || '🌡️';
+      const feelsF   = Math.round(w.main.feels_like);
+      const tempF    = Math.round(w.main.temp);
+      const unit     = unitLabel();
+      const speed    = speedLabel();
+
+      // Build 5-day forecast (one entry per day at noon)
+      const dailyMap = {};
+      (f.list || []).forEach(item => {
+        const date = new Date(item.dt * 1000);
+        const key  = date.toDateString();
+        if (!dailyMap[key]) dailyMap[key] = { min: item.main.temp_min, max: item.main.temp_max, icon: item.weather[0].icon, day: date.getDay() };
+        else {
+          dailyMap[key].min = Math.min(dailyMap[key].min, item.main.temp_min);
+          dailyMap[key].max = Math.max(dailyMap[key].max, item.main.temp_max);
+        }
+      });
+      const forecastDays = Object.values(dailyMap).slice(1, 6);
+
+      const forecastHtml = forecastDays.map(d => `
+        <div class="forecast-item">
+          <div class="f-day">${DAY_NAMES[d.day]}</div>
+          <div class="f-icon">${WEATHER_ICONS[d.icon] || '🌡️'}</div>
+          <div class="f-hi">${Math.round(d.max)}${unit}</div>
+          <div class="f-lo">${Math.round(d.min)}${unit}</div>
+        </div>
+      `).join('');
+
+      const visibility = w.visibility ? `${(w.visibility / 1000).toFixed(1)} km` : 'N/A';
+      const sunrise    = new Date(w.sys.sunrise * 1000).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      const sunset     = new Date(w.sys.sunset  * 1000).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+
+      document.getElementById('weather-content').innerHTML = `
+        <div class="current">
+          <div class="weather-icon">${icon}</div>
+          <div class="temp-block">
+            <div class="temp">${tempF}<span class="temp-unit">${unit}</span></div>
+            <div class="feels-like">Feels like ${feelsF}${unit}</div>
+          </div>
+          <div class="condition-block">
+            <div class="condition">${w.weather[0].description.replace(/\b\w/g, c => c.toUpperCase())}</div>
+            <div class="city-name">${w.name}, ${w.sys.country}</div>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-icon">💧</div>
+            <div class="stat-value">${w.main.humidity}%</div>
+            <div class="stat-label">Humidity</div>
+          </div>
+          <div class="stat">
+            <div class="stat-icon">💨</div>
+            <div class="stat-value">${Math.round(w.wind.speed)} ${speed}</div>
+            <div class="stat-label">Wind</div>
+          </div>
+          <div class="stat">
+            <div class="stat-icon">👁️</div>
+            <div class="stat-value">${visibility}</div>
+            <div class="stat-label">Visibility</div>
+          </div>
+          <div class="stat">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value">${w.main.pressure} hPa</div>
+            <div class="stat-label">Pressure</div>
+          </div>
+          <div class="stat">
+            <div class="stat-icon">🌅</div>
+            <div class="stat-value">${sunrise}</div>
+            <div class="stat-label">Sunrise</div>
+          </div>
+          <div class="stat">
+            <div class="stat-icon">🌇</div>
+            <div class="stat-value">${sunset}</div>
+            <div class="stat-label">Sunset</div>
+          </div>
+        </div>
+
+        ${forecastHtml ? `<div class="forecast-row">${forecastHtml}</div>` : ''}
+
+        <div class="toggle-row">
+          <button class="unit-btn ${currentUnit==='imperial'?'active':''}" onclick="setUnit('imperial')">°F</button>
+          <button class="unit-btn ${currentUnit==='metric'?'active':''}" onclick="setUnit('metric')">°C</button>
+        </div>
+      `;
+    }
+
+    function setUnit(unit) {
+      if (currentUnit === unit) return;
+      currentUnit = unit;
+      fetchWeather();
+    }
+
+    function showLoading() {
+      document.getElementById('weather-content').innerHTML =
+        '<div class="loading-state"><div class="spinner"></div><div>Loading weather…</div></div>';
+    }
+
+    function showError(msg) {
+      document.getElementById('weather-content').innerHTML =
+        `<div class="error-state">⚠️ ${msg || 'Could not load weather. Check your city name and API key.'}</div>`;
+    }
+
+    function showSetup() {
+      document.getElementById('weather-content').innerHTML = `
+        <div class="setup-state">
+          <div style="font-size:3rem">☁️</div>
+          <h3>Enter a city to get started</h3>
+          <p>Type a city name in the search box above, or allow location access.</p>
+          <div class="api-key-note">
+            Replace <code>YOUR_API_KEY</code> in the script with a free key from
+            <a href="https://openweathermap.org/api" target="_blank" rel="noopener noreferrer">openweathermap.org</a>.
+          </div>
+        </div>`;
+    }
+
+    function showApiKeyWarning() {
+      document.getElementById('weather-content').innerHTML = `
+        <div class="setup-state">
+          <div style="font-size:3rem">🔑</div>
+          <h3>API Key Required</h3>
+          <p>Open this file and replace <code>YOUR_API_KEY</code> on line 1 of the script section with your free OpenWeatherMap API key.</p>
+          <div class="api-key-note">
+            Get a free key at
+            <a href="https://openweathermap.org/api" target="_blank" rel="noopener noreferrer">openweathermap.org/api</a>
+            — the free tier allows 1,000 calls per day.<br><br>
+            <strong>Or use the Apps Script version</strong> in <code>/apps-script/weather/</code> to keep your key server-side.
+          </div>
+        </div>`;
+    }
+
+    // Auto-start
+    if (DEFAULT_CITY && API_KEY !== 'YOUR_API_KEY') {
+      fetchWeather();
+    } else if (!DEFAULT_CITY && API_KEY !== 'YOUR_API_KEY') {
+      tryGeolocation();
+    } else {
+      showApiKeyWarning();
+    }
+  </script>
+</body>
+</html>

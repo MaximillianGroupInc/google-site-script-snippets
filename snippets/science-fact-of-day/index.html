@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Science Fact of the Day</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #0d1b2a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #112240;
+      border-radius: 16px;
+      max-width: 620px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      overflow: hidden;
+      border: 1px solid #1e3a5f;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #0f3460, #1a5276);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #64d2ff;
+      font-weight: 500;
+    }
+
+    .header-count {
+      font-size: 0.72rem;
+      background: rgba(100,210,255,0.15);
+      color: #64d2ff;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .card-body { padding: 1.75rem 1.75rem 1.5rem; }
+
+    .field-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #64d2ff;
+      background: rgba(100,210,255,0.1);
+      border: 1px solid rgba(100,210,255,0.3);
+      padding: 0.2rem 0.7rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    .fact-emoji {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+
+    .fact-headline {
+      font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+      font-weight: 700;
+      color: #e8f4fd;
+      line-height: 1.4;
+      margin-bottom: 0.9rem;
+    }
+
+    .fact-detail {
+      font-size: clamp(0.88rem, 2vw, 0.98rem);
+      font-weight: 300;
+      color: #93b4d0;
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+
+    .fact-source {
+      font-size: 0.75rem;
+      color: #4a6a8a;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .fact-source a {
+      color: #64a8d2;
+      text-decoration: none;
+    }
+
+    .fact-source a:hover { text-decoration: underline; }
+
+    .divider {
+      height: 1px;
+      background: #1e3a5f;
+      margin: 1.2rem 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: linear-gradient(135deg, #0f3460, #1a5276);
+      color: #64d2ff;
+      border: 1px solid rgba(100,210,255,0.3);
+      padding: 0.5rem 1.1rem;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #1a5276; }
+
+    .stars {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <span class="header-label">🔬 Science Fact of the Day</span>
+      <span class="header-count" id="fact-count">-- / --</span>
+    </div>
+    <div class="card-body">
+      <div id="content"></div>
+      <div class="divider"></div>
+      <div class="actions">
+        <button onclick="nextFact()">Next Fact</button>
+        <button onclick="copyFact()">Copy Fact</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // SCIENCE FACTS — purely client-side, no API required.
+    // Rotates daily so all visitors see the same fact each day.
+    // ---------------------------------------------------------------------------
+    const FACTS = [
+      {
+        emoji: '⚡', field: 'Physics',
+        headline: 'Lightning is five times hotter than the surface of the Sun.',
+        detail: 'A single lightning bolt heats the surrounding air to roughly 30,000 Kelvin — about 5 times hotter than the Sun\'s 5,500°C surface. This superheated air rapidly expands, creating the shockwave we hear as thunder.',
+        source: 'NOAA Lightning Safety'
+      },
+      {
+        emoji: '🌌', field: 'Astronomy',
+        headline: 'A day on Venus is longer than a year on Venus.',
+        detail: 'Venus rotates so slowly that a single Venusian solar day (243 Earth days) is actually longer than its orbital year (225 Earth days). It also spins backwards compared to most planets — so the Sun rises in the west.',
+        source: 'NASA Solar System Exploration'
+      },
+      {
+        emoji: '🧬', field: 'Biology',
+        headline: 'If you uncoiled all the DNA in your body, it would reach Pluto and back — 17 times.',
+        detail: 'Every cell in your body contains roughly 2 metres of DNA. Multiplied by 37 trillion cells, that\'s about 74 billion kilometres — enough to stretch from Earth to Pluto and back 17 times.',
+        source: 'Nature Education'
+      },
+      {
+        emoji: '🍯', field: 'Chemistry',
+        headline: 'Honey found in 3,000-year-old Egyptian tombs was still perfectly edible.',
+        detail: 'Honey\'s low moisture content, acidic pH, and natural hydrogen peroxide production make it one of the few foods that never spoils when sealed. Archaeological expeditions have tasted ancient honey and found it unchanged.',
+        source: 'National Geographic'
+      },
+      {
+        emoji: '🌊', field: 'Oceanography',
+        headline: 'The deepest point in the ocean is deeper than Mount Everest is tall.',
+        detail: 'Challenger Deep in the Mariana Trench plunges to 11,034 metres below sea level. Mount Everest stands 8,849 metres above it. If you placed Everest at the bottom, there would still be over 2 km of water above its peak.',
+        source: 'NOAA Ocean Exploration'
+      },
+      {
+        emoji: '🪐', field: 'Astronomy',
+        headline: 'Saturn would float if you could find a bathtub large enough.',
+        detail: 'Saturn\'s average density is just 687 kg/m³ — less than water (1,000 kg/m³). It\'s the only planet in our solar system with a lower density than water, making it theoretically buoyant.',
+        source: 'NASA Planetary Fact Sheet'
+      },
+      {
+        emoji: '🔬', field: 'Microbiology',
+        headline: 'There are viruses that infect other viruses.',
+        detail: 'Virophages are viruses that parasitise giant viruses. The Sputnik virophage, discovered in 2008, hijacks the replication machinery of the giant Mimivirus. This blurs the line between pathogen and parasite at the smallest scale of life.',
+        source: 'Science, Vol 341'
+      },
+      {
+        emoji: '🧠', field: 'Neuroscience',
+        headline: 'Your brain generates about 20 watts of electrical power.',
+        detail: 'The human brain uses roughly 20 watts of power — enough to run a dim light bulb. Despite being only 2% of body weight, it consumes about 20% of the body\'s total energy, making it the most metabolically demanding organ per unit mass.',
+        source: 'Scientific American'
+      },
+      {
+        emoji: '⏳', field: 'History of Science',
+        headline: 'Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid.',
+        detail: 'Cleopatra lived around 69–30 BCE, roughly 2,000 years after the Great Pyramid was built (~2560 BCE) and about 2,000 years before the Apollo Moon landings (1969 CE). The pyramids are astonishingly ancient.',
+        source: 'Smithsonian Magazine'
+      },
+      {
+        emoji: '🐊', field: 'Evolution',
+        headline: 'Sharks are older than trees.',
+        detail: 'Sharks evolved around 450 million years ago. The first true trees appeared only about 385 million years ago. Sharks have survived all five mass extinction events that wiped out the vast majority of Earth\'s species.',
+        source: 'Geological Society of America'
+      },
+      {
+        emoji: '💧', field: 'Physics',
+        headline: 'Water can simultaneously boil and freeze at the exact same moment.',
+        detail: 'At the "triple point" — for water, exactly 273.16 K and 611.7 Pa — liquid water, ice, and water vapour coexist in thermodynamic equilibrium. This precise condition is used to calibrate the international Kelvin temperature scale.',
+        source: 'NIST Physical Measurement Laboratory'
+      },
+      {
+        emoji: '🌍', field: 'Geology',
+        headline: 'Earth\'s magnetic field has reversed hundreds of times throughout history.',
+        detail: 'About every 200,000–300,000 years on average, Earth\'s magnetic poles flip. The last reversal was 780,000 years ago. During reversals, the field weakens but doesn\'t disappear — and life has survived every one of them.',
+        source: 'USGS'
+      },
+      {
+        emoji: '🐙', field: 'Biology',
+        headline: 'Octopuses have three hearts, eight arms, and blue blood.',
+        detail: 'Two branchial hearts pump blood through the gills; one systemic heart circulates oxygenated blood to the body. Their blood uses haemocyanin (containing copper) instead of haemoglobin, giving it a distinctive blue colour in oxygenated form.',
+        source: 'Woods Hole Oceanographic Institution'
+      },
+      {
+        emoji: '☀️', field: 'Astrophysics',
+        headline: 'A photon takes 100,000 years to travel from the Sun\'s core to its surface.',
+        detail: 'The Sun\'s interior is so dense that photons of light are constantly absorbed and re-emitted, zigzagging in a random walk. This journey averages 100,000 years. Once it escapes the surface, that same photon reaches Earth in just 8 minutes.',
+        source: 'NASA Solar Physics'
+      },
+      {
+        emoji: '🧪', field: 'Chemistry',
+        headline: 'Diamonds can be made from peanut butter.',
+        detail: 'Under extreme pressures of around 2 million atmospheres — similar to conditions deep in Earth\'s mantle — the carbon in peanut butter (and many other carbon-rich materials) can be crystallised into diamonds. It works, but the diamonds are tiny.',
+        source: 'Proceedings of the National Academy of Sciences'
+      },
+      {
+        emoji: '🌡️', field: 'Meteorology',
+        headline: 'The average cloud weighs about 500,000 kg.',
+        detail: 'A typical cumulus cloud with dimensions of 1 km × 1 km × 1 km contains water droplets so tiny they float, but their collective mass is around 500 tonnes. Storm clouds (cumulonimbus) can weigh hundreds of millions of kilograms.',
+        source: 'USGS Water Resources'
+      },
+      {
+        emoji: '🔭', field: 'Astronomy',
+        headline: 'There are more stars in the universe than grains of sand on all of Earth\'s beaches.',
+        detail: 'Estimates put Earth\'s beach sand grains at around 7.5 × 10¹⁸ (7.5 quintillion). The observable universe is estimated to contain at least 2 × 10²³ stars — roughly 30,000 times more stars than grains of sand.',
+        source: 'University of Hawaii, Howard McAllister'
+      },
+      {
+        emoji: '🦠', field: 'Biology',
+        headline: 'Your body produces about 3.8 million new cells every second.',
+        detail: 'The human body replaces red blood cells at roughly 2–3 million per second, plus millions of skin, gut lining, and immune cells. Counterintuitively, most of the atoms in your body are replaced within a few years.',
+        source: 'Cell Metabolism Journal'
+      },
+      {
+        emoji: '🧲', field: 'Quantum Physics',
+        headline: 'Quantum entanglement allows two particles to be correlated instantly across any distance.',
+        detail: 'When two particles are entangled, measuring one instantly determines a correlated property of the other — regardless of the distance between them. Einstein called it "spooky action at a distance." It does not allow faster-than-light information transfer.',
+        source: 'Physical Review Letters'
+      },
+      {
+        emoji: '🌙', field: 'Astronomy',
+        headline: 'The Moon is slowly drifting away from Earth at 3.8 cm per year.',
+        detail: 'Tidal interactions transfer angular momentum from Earth\'s rotation to the Moon\'s orbit, pushing it farther out. When the Moon formed ~4.5 billion years ago, it was only ~24,000 km away. Today it is 384,400 km distant.',
+        source: 'NASA Lunar Reconnaissance Orbiter'
+      },
+      {
+        emoji: '🌬️', field: 'Physics',
+        headline: 'Sound travels four times faster in water than in air.',
+        detail: 'In air at 20°C, sound travels at ~343 m/s. In seawater it travels at ~1,500 m/s. The higher density and incompressibility of water allow pressure waves to propagate much faster. This is why SONAR works so effectively underwater.',
+        source: 'Acoustical Society of America'
+      },
+      {
+        emoji: '🍌', field: 'Chemistry',
+        headline: 'Bananas are slightly radioactive.',
+        detail: 'Bananas contain potassium-40, a naturally radioactive isotope of potassium. The amount is negligible — you\'d need to eat ~5 million bananas at once to receive a lethal radiation dose. "Banana Equivalent Dose" is a lighthearted unit used by physicists.',
+        source: 'Health Physics Society'
+      },
+      {
+        emoji: '🌡️', field: 'Thermodynamics',
+        headline: 'Absolute zero is physically impossible to reach.',
+        detail: 'The third law of thermodynamics states that reaching a temperature of absolute zero (−273.15°C) would require infinite energy. Scientists have reached within a billionth of a degree of it using laser cooling, but the exact threshold is unattainable.',
+        source: 'Physics Today'
+      },
+      {
+        emoji: '🦅', field: 'Biology',
+        headline: 'Crows can recognise human faces and hold grudges for years.',
+        detail: 'Experiments at the University of Washington showed that crows remember specific human faces. If a person handled them negatively, crows would scold that person and teach other crows to react the same way — for up to five years.',
+        source: 'Animal Cognition, University of Washington'
+      },
+      {
+        emoji: '🧊', field: 'Chemistry',
+        headline: 'Water is one of the very few substances that is less dense as a solid than as a liquid.',
+        detail: 'Most substances contract when frozen, becoming denser. Water expands ~9% when it freezes because hydrogen bonds arrange into a hexagonal lattice with more space than liquid water. This makes ice float — a critical property that allows aquatic life to survive winters.',
+        source: 'Journal of Physical Chemistry'
+      },
+      {
+        emoji: '💾', field: 'Biochemistry',
+        headline: 'A single gram of DNA can theoretically store 215 petabytes of data.',
+        detail: 'DNA stores information using 4 nucleotide bases (A, T, C, G). Researchers have already encoded Wikipedia, music, and entire operating systems into synthetic DNA. A shoe-box-sized repository of DNA could hold all data ever created by humanity.',
+        source: 'Science, Church Lab, Harvard'
+      },
+      {
+        emoji: '🌋', field: 'Geology',
+        headline: 'The highest point on Earth measured from the planet\'s centre is not Everest.',
+        detail: 'Because Earth bulges at the equator, Mount Chimborazo in Ecuador (6,268 m above sea level) is actually 6,384 km from Earth\'s centre — 2 km farther than Everest. By this measure, Chimborazo is "closest to space."',
+        source: 'National Geographic'
+      },
+      {
+        emoji: '🧲', field: 'Materials Science',
+        headline: 'Helium is the only element that cannot be solidified at atmospheric pressure.',
+        detail: 'Even at absolute zero, helium remains a liquid under normal pressure. It requires about 25 atmospheres of pressure to solidify. This is because quantum zero-point energy keeps its atoms in constant motion, preventing crystal formation.',
+        source: 'American Physical Society'
+      },
+      {
+        emoji: '💥', field: 'Astrophysics',
+        headline: 'A single supernova can briefly outshine all 200 billion stars in its galaxy combined.',
+        detail: 'At peak brightness, a Type Ia supernova releases as much energy as the Sun will emit over its entire 10-billion-year lifetime — in just a few weeks. For a brief moment, one dying star outshines an entire galaxy of hundreds of billions of stars.',
+        source: 'Caltech Astronomy'
+      },
+      {
+        emoji: '🐝', field: 'Ethology',
+        headline: 'Bees can recognise and remember human faces.',
+        detail: 'Research showed honey bees can distinguish between photographs of different human faces with up to 90% accuracy. They use a technique called "configural processing" — the same holistic approach humans use — despite having brains smaller than a sesame seed.',
+        source: 'Journal of Experimental Biology'
+      },
+    ];
+
+    let currentIndex = 0;
+
+    function getDayIndex() {
+      const today = new Date();
+      return Math.floor((Date.now() - new Date(today.getFullYear(), 0, 0)) / 86400000) % FACTS.length;
+    }
+
+    function renderFact(fact) {
+      document.getElementById('fact-count').textContent = `${currentIndex + 1} / ${FACTS.length}`;
+      document.getElementById('content').innerHTML = `
+        <span class="fact-emoji">${fact.emoji}</span>
+        <span class="field-badge">${fact.field}</span>
+        <h2 class="fact-headline">${fact.headline}</h2>
+        <p class="fact-detail">${fact.detail}</p>
+        <div class="fact-source">📚 Source: ${fact.source}</div>
+      `;
+    }
+
+    function nextFact() {
+      currentIndex = (currentIndex + 1) % FACTS.length;
+      renderFact(FACTS[currentIndex]);
+    }
+
+    function copyFact() {
+      const fact = FACTS[currentIndex];
+      const text = `🔬 ${fact.headline}\n\n${fact.detail}\n\nSource: ${fact.source}`;
+      navigator.clipboard
+        ? navigator.clipboard.writeText(text).then(() => alert('Fact copied!'))
+        : alert(text);
+    }
+
+    currentIndex = getDayIndex();
+    renderFact(FACTS[currentIndex]);
+  </script>
+</body>
+</html>

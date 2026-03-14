@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News Ticker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ticker-height: 44px;
+      --ticker-bg:     #1a1a1a;
+      --ticker-text:   #f5f5f5;
+      --label-bg:      #cc0000;
+      --label-text:    #fff;
+      --speed:         40s;
+    }
+
+    body {
+      background: var(--ticker-bg);
+      overflow: hidden;
+      height: var(--ticker-height);
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .ticker-wrap {
+      width: 100%;
+      height: var(--ticker-height);
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+    }
+
+    .ticker-label {
+      flex-shrink: 0;
+      background: var(--label-bg);
+      color: var(--label-text);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+      z-index: 2;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.4);
+    }
+
+    .ticker-body {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .ticker-body::before,
+    .ticker-body::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 40px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .ticker-body::before { left: 0;  background: linear-gradient(to right, var(--ticker-bg), transparent); }
+    .ticker-body::after  { right: 0; background: linear-gradient(to left,  var(--ticker-bg), transparent); }
+
+    .ticker-scroll {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: ticker-move var(--speed) linear infinite;
+      will-change: transform;
+    }
+
+    .ticker-scroll:hover { animation-play-state: paused; }
+
+    @keyframes ticker-move {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .news-item {
+      display: inline-flex;
+      align-items: center;
+      color: var(--ticker-text);
+      font-size: 0.82rem;
+      cursor: pointer;
+      padding: 0 1.2rem;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .news-item:hover { color: #fbbf24; }
+
+    .news-divider {
+      color: #555;
+      font-size: 0.7rem;
+      padding: 0 0.2rem;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="ticker-wrap">
+    <div class="ticker-label">📰 BREAKING</div>
+    <div class="ticker-body">
+      <div class="ticker-scroll" id="ticker-scroll">
+        <span class="news-item">Loading latest headlines…</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function renderTicker(headlines) {
+      if (!headlines || headlines.length === 0) return;
+
+      var items = headlines.concat(headlines); // duplicate for seamless loop
+      var html  = items.map(function(item, i) {
+        var divider = i > 0 ? '<span class="news-divider">◆</span>' : '';
+        var anchor  = item.link && item.link !== '#'
+          ? '<a class="news-item" href="' + item.link + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(item.title) + '</a>'
+          : '<span class="news-item">' + escapeHtml(item.title) + '</span>';
+        return divider + anchor;
+      }).join('');
+
+      document.getElementById('ticker-scroll').innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      var d = document.createElement('div');
+      d.appendChild(document.createTextNode(text));
+      return d.innerHTML;
+    }
+
+    // Fetch headlines via the server-side Apps Script function
+    google.script.run
+      .withSuccessHandler(renderTicker)
+      .withFailureHandler(function(e) {
+        document.getElementById('ticker-scroll').innerHTML =
+          '<span class="news-item">Error loading news: ' + escapeHtml(e.message) + '</span>';
+      })
+      .getHeadlines();
+
+    // Refresh every 10 minutes
+    setInterval(function() {
+      google.script.run
+        .withSuccessHandler(renderTicker)
+        .getHeadlines();
+    }, 10 * 60 * 1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time &amp; Date Widget</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1.5rem;
+    }
+
+    .widget { text-align: center; }
+
+    .time-display {
+      font-size: clamp(3rem, 12vw, 6rem);
+      font-weight: 100;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: #f8fafc;
+    }
+
+    .colon {
+      animation: blink 1s step-end infinite;
+      color: #60a5fa;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.2; }
+    }
+
+    .period {
+      display: inline-block;
+      background: #1e3a8a;
+      color: #93c5fd;
+      font-size: 0.35em;
+      font-weight: 400;
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      vertical-align: super;
+      letter-spacing: 0.1em;
+      margin-left: 0.3rem;
+    }
+
+    .seconds-row {
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: 100;
+      color: #94a3b8;
+      margin-top: 0.4rem;
+    }
+
+    .divider {
+      width: 80px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #60a5fa, transparent);
+      margin: 1.2rem auto;
+    }
+
+    .day-name {
+      font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+      font-weight: 400;
+      color: #60a5fa;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .date-full {
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      font-weight: 300;
+      color: #94a3b8;
+      margin-top: 0.5rem;
+    }
+
+    .week-info {
+      font-size: 0.75rem;
+      color: #475569;
+      margin-top: 0.4rem;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <div class="widget">
+    <div class="time-display">
+      <span id="hours">--</span><span class="colon">:</span><span id="minutes">--</span><span class="period" id="period">AM</span>
+    </div>
+    <div class="seconds-row">
+      <span id="seconds">--</span> <span style="font-size:.7em">s</span>
+    </div>
+    <div class="divider"></div>
+    <div class="day-name"  id="day-name">---</div>
+    <div class="date-full" id="date-full">--- --, ----</div>
+    <div class="week-info" id="week-info">Week -- of ----</div>
+  </div>
+
+  <script>
+    const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function getWeekNumber(d) {
+      const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      utc.setUTCDate(utc.getUTCDate() + 4 - (utc.getUTCDay() || 7));
+      const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+      return Math.ceil((((utc - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      let h = now.getHours();
+      const period = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+
+      document.getElementById('hours').textContent   = pad(h);
+      document.getElementById('minutes').textContent  = pad(now.getMinutes());
+      document.getElementById('seconds').textContent  = pad(now.getSeconds());
+      document.getElementById('period').textContent   = period;
+      document.getElementById('day-name').textContent = DAYS[now.getDay()];
+      document.getElementById('date-full').textContent =
+        `${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+      document.getElementById('week-info').textContent =
+        `Week ${getWeekNumber(now)} · Day ${Math.floor(
+          (now - new Date(now.getFullYear(), 0, 0)) / 86400000
+        )} of ${now.getFullYear()}`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>

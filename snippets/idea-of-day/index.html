@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Idea of the Day</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #f97316 0%, #ec4899 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #f97316, #ec4899);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.9);
+      font-weight: 500;
+    }
+
+    .idea-count {
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .card-body { padding: 1.75rem 1.75rem 1.5rem; }
+
+    .idea-emoji {
+      font-size: 3rem;
+      margin-bottom: 0.8rem;
+      display: block;
+    }
+
+    .idea-category {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #f97316;
+      background: #fff7ed;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.8rem;
+    }
+
+    .idea-title {
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-weight: 700;
+      color: #1c1917;
+      line-height: 1.3;
+      margin-bottom: 0.8rem;
+    }
+
+    .idea-description {
+      font-size: clamp(0.88rem, 2vw, 1rem);
+      color: #44403c;
+      line-height: 1.7;
+      margin-bottom: 1.2rem;
+    }
+
+    .steps-title {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #78716c;
+      margin-bottom: 0.5rem;
+    }
+
+    .steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .steps li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      color: #44403c;
+      line-height: 1.5;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, #f97316, #ec4899);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: linear-gradient(135deg, #f97316, #ec4899);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <span class="header-label">💡 Idea of the Day</span>
+      <span class="idea-count" id="idea-count">-- / --</span>
+    </div>
+    <div class="card-body">
+      <div id="content"></div>
+      <div class="actions">
+        <button onclick="nextIdea()">Next Idea</button>
+        <button onclick="copyIdea()">Copy Idea</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // IDEAS — purely client-side, no API required.
+    // Rotates by day of year so everyone sees the same idea each day.
+    // ---------------------------------------------------------------------------
+    const IDEAS = [
+      {
+        emoji: '🌱', category: 'Personal Growth',
+        title: 'Start a 30-Day Micro-Habit',
+        description: 'Pick one tiny skill and practice it for just 10 minutes every day for a month. The consistency matters far more than the duration.',
+        steps: ['Choose a skill (drawing, coding, language, instrument)', 'Schedule a fixed 10-minute slot each day', 'Track progress in a simple notebook or app', 'Share your Day-30 result with someone']
+      },
+      {
+        emoji: '📝', category: 'Reflection',
+        title: 'Write a Letter to Your Future Self',
+        description: 'Capture where you are today — your hopes, fears, goals, and a description of your life. Seal it and open in exactly one year.',
+        steps: ['Describe your life as it is right now in full detail', 'Write three goals you hope to have achieved', 'Note one fear you want to have conquered', 'Seal and calendar-remind yourself to open it']
+      },
+      {
+        emoji: '🏆', category: 'Mindset',
+        title: 'Build a "Reverse Bucket List"',
+        description: 'Instead of listing what you want to do, list what you\'ve already done. This shifts focus to gratitude and reveals how much you\'ve already accomplished.',
+        steps: ['List 20 experiences, skills, or achievements you\'re proud of', 'Reflect on what made each one possible', 'Share it with a friend or family member', 'Keep it visible as a daily confidence booster']
+      },
+      {
+        emoji: '📚', category: 'Learning',
+        title: 'Take a Free Online Course Today',
+        description: 'Platforms like Coursera, edX, Khan Academy, and MIT OpenCourseWare offer world-class courses for free. Pick a topic you know nothing about.',
+        steps: ['Browse one free learning platform for 10 minutes', 'Choose a topic completely outside your comfort zone', 'Commit to completing the first module today', 'Tell someone what you learned']
+      },
+      {
+        emoji: '🎨', category: 'Creativity',
+        title: 'Create a Vision Board',
+        description: 'Collect images, words, and ideas representing your ideal life 5 years from now. The act of visualisation rewires your subconscious focus.',
+        steps: ['Gather magazines, or use Pinterest/Google Images', 'Focus on 5 life areas: career, health, relationships, travel, growth', 'Arrange and photograph or print your board', 'Place it somewhere you see every morning']
+      },
+      {
+        emoji: '🤝', category: 'Connection',
+        title: 'Call Someone Unexpected',
+        description: 'Reach out to someone you haven\'t spoken to in over a year — not to catch up, but simply to tell them you appreciate them.',
+        steps: ['Think of 3 people you\'ve lost touch with', 'Choose the one you have the warmest memory of', 'Call (not text) and say one specific thing you appreciate about them', 'Schedule a follow-up if the conversation warrants it']
+      },
+      {
+        emoji: '🍳', category: 'Culture',
+        title: 'Cook a Recipe from Another Culture',
+        description: 'Choose a cuisine you\'ve never cooked from before. Cooking a traditional dish is a form of cultural travel without leaving your kitchen.',
+        steps: ['Pick a country you\'ve never cooked food from', 'Find one authentic recipe (not a fusion)', 'Source all ingredients—substitute only if absolutely necessary', 'Learn one fact about the dish\'s cultural significance while you cook']
+      },
+      {
+        emoji: '📷', category: 'Creativity',
+        title: 'Go on a "Pattern Walk"',
+        description: 'Take a walk with the sole goal of photographing interesting patterns, textures, and repetitions around you. You\'ll see your surroundings with new eyes.',
+        steps: ['Bring your phone camera and walk for 20–30 minutes', 'Photograph only patterns and textures — no people', 'Try to capture 10 unique patterns', 'Review your shots and pick one to edit and share']
+      },
+      {
+        emoji: '✏️', category: 'Writing',
+        title: 'Write a 100-Word Story',
+        description: 'A complete story — with a beginning, middle, and end — in exactly 100 words. This constraint forces precision and creativity.',
+        steps: ['Choose a mundane, everyday situation as your subject', 'Write a first draft without counting', 'Edit ruthlessly to hit exactly 100 words', 'Share it in a writing forum or with a friend for feedback']
+      },
+      {
+        emoji: '🧹', category: 'Productivity',
+        title: 'Declutter One Drawer or Shelf',
+        description: 'Physical clutter creates mental clutter. Start with just one drawer. The momentum usually spreads to the rest of the room.',
+        steps: ['Empty the chosen space completely', 'Sort into: keep, donate, discard', 'Only return items you genuinely use', 'Wipe down the space before putting anything back']
+      },
+      {
+        emoji: '🌍', category: 'Exploration',
+        title: 'Research a Country You Know Nothing About',
+        description: 'Pick a country you couldn\'t confidently locate on a map. Spend 30 minutes learning its history, food, language, and traditions.',
+        steps: ['Open a world map and point at a random country', 'Read its Wikipedia article from top to bottom', 'Watch one short YouTube documentary or travel video', 'Cook or taste something from that culture this week']
+      },
+      {
+        emoji: '💰', category: 'Finance',
+        title: 'Audit All Your Subscriptions',
+        description: 'The average person pays for subscriptions they haven\'t used in months. Today, find and cancel anything unused.',
+        steps: ['Check your bank/card statements for recurring charges', 'List every subscription with its cost', 'Cancel anything you haven\'t used in the past 3 months', 'Calculate and note your annual savings']
+      },
+      {
+        emoji: '🌿', category: 'Wellness',
+        title: 'Start a Windowsill Herb Garden',
+        description: 'Growing even three herbs teaches patience, builds daily mindfulness, and gives you fresh ingredients that taste better than store-bought.',
+        steps: ['Choose basil, mint, and rosemary as a starter trio', 'Buy small pots and basic potting mix', 'Place on a sunny windowsill and water consistently', 'Cook one meal using your fresh herbs within a week']
+      },
+      {
+        emoji: '🎤', category: 'Confidence',
+        title: 'Learn a Magic Trick',
+        description: 'A single well-executed card trick can delight people of any age and build your confidence in social settings.',
+        steps: ['Search "beginner card trick tutorial" on YouTube', 'Choose a trick that requires only a standard deck', 'Practice until you can do it 10 times without hesitation', 'Perform it for at least 3 different people today']
+      },
+      {
+        emoji: '🧠', category: 'Mindset',
+        title: 'Identify Your Core Values',
+        description: 'Most people have never explicitly defined what they value most. Knowing your top three values makes every decision easier.',
+        steps: ['Search "list of personal values" and read through a full list', 'Narrow down to your top 10, then to your top 3', 'Write a one-sentence definition of each value in your own words', 'Post them somewhere visible and reflect weekly']
+      },
+      {
+        emoji: '🏃', category: 'Health',
+        title: 'Try a New Form of Movement',
+        description: 'If you run, try swimming. If you gym, try a dance class. Novelty in exercise challenges your body and mind in new ways.',
+        steps: ['List 5 forms of exercise you\'ve never tried', 'Choose the one that makes you most uncomfortable (that\'s the one)', 'Find a free beginner class, video, or local session', 'Commit to trying it at least twice before judging']
+      },
+      {
+        emoji: '⭐', category: 'Kindness',
+        title: 'Write a Review for a Small Business',
+        description: 'A positive Google or Yelp review can make a significant difference for an independent business. It takes 3 minutes and costs nothing.',
+        steps: ['Think of a small business that exceeded your expectations', 'Write a specific, genuine review (not generic praise)', 'Mention an employee by name if possible', 'Share the review link with the business owner on social media']
+      },
+      {
+        emoji: '🗺️', category: 'Adventure',
+        title: 'Plan a $20 Adventure Day',
+        description: 'Challenge yourself to plan a full day of exploration using only $20 or less. Constraints breed creativity.',
+        steps: ['Research free or low-cost attractions in your city or region', 'Plan a route that keeps you out for at least 5 hours', 'Pack a homemade lunch to stretch your budget', 'Document the day and share what surprised you most']
+      },
+      {
+        emoji: '🎵', category: 'Creativity',
+        title: 'Create a Soundtrack for Your Ideal Day',
+        description: 'Build a playlist that would perfectly soundtrack the most ideal version of tomorrow — morning to night.',
+        steps: ['Define the "chapters" of your ideal day (morning, commute, work, evening)', 'Assign 3–5 songs to each chapter that fit its mood', 'Build the playlist and listen to it the next morning', 'Adjust and refine after experiencing it']
+      },
+      {
+        emoji: '🔍', category: 'Learning',
+        title: 'Deep-Dive One Wikipedia Rabbit Hole',
+        description: 'Start with a topic that mildly interests you and follow the links for 45 minutes without distraction. Document three surprising things you learned.',
+        steps: ['Choose a starting topic on Wikipedia', 'Read the article fully, then click one interesting link', 'Repeat for 45 minutes, exploring freely', 'Write down 3 facts that genuinely surprised you']
+      },
+      {
+        emoji: '🌅', category: 'Mindfulness',
+        title: 'Practise the 2-Minute Rule for One Day',
+        description: 'David Allen\'s rule: if a task takes less than 2 minutes, do it immediately. For one full day, apply this ruthlessly.',
+        steps: ['Begin the day by doing your first 2-minute task before anything else', 'Every time a quick task arises, act on it immediately', 'Notice how much mental weight these small undone tasks carry', 'Journal your energy levels at the end of the day']
+      },
+      {
+        emoji: '🤝', category: 'Community',
+        title: 'Volunteer for One Hour',
+        description: 'Research shows that even brief volunteering significantly boosts wellbeing, mood, and sense of purpose.',
+        steps: ['Search for volunteer opportunities in your city on VolunteerMatch or Idealist', 'Choose a cause you feel personally connected to', 'Sign up for a single one-hour session to start', 'Reflect on how you feel afterward — and whether to continue']
+      },
+      {
+        emoji: '🧩', category: 'Productivity',
+        title: 'Write a "Personal User Manual"',
+        description: 'Document how you work best — your peak hours, communication preferences, pet peeves, and motivators. Share it with your team or partner.',
+        steps: ['Identify your peak productivity hours', 'Note how you prefer to receive feedback', 'List your biggest work distractions', 'Share the document with at least one person in your life']
+      },
+      {
+        emoji: '🌌', category: 'Learning',
+        title: 'Learn to Identify 5 Constellations',
+        description: 'On a clear night, use a free app like Stellarium or Sky Map to find and memorise five constellations visible from your location.',
+        steps: ['Download a free stargazing app (Stellarium is excellent)', 'Go outside on a clear night away from bright lights', 'Find and name 5 constellations you can see', 'Learn one mythology story attached to each constellation']
+      },
+      {
+        emoji: '👨‍👩‍👧', category: 'Heritage',
+        title: 'Interview a Family Elder',
+        description: 'Record a conversation with a grandparent, parent, or elder relative about their life. These stories are irreplaceable family history.',
+        steps: ['Prepare 10 open-ended questions about their childhood, youth, and life lessons', 'Record audio or video with their permission', 'Ask: "What\'s something you wish you\'d known at 25?"', 'Transcribe or caption the recording for future family members']
+      },
+      {
+        emoji: '📊', category: 'Finance',
+        title: 'Create a Zero-Based Budget',
+        description: 'Assign every dollar of your income a job before the month begins. This one habit transforms financial clarity.',
+        steps: ['List all sources of monthly income', 'List all fixed monthly expenses', 'Allocate remaining money to savings, discretionary, and debt', 'Ensure income minus allocations equals exactly zero']
+      },
+      {
+        emoji: '✍️', category: 'Reflection',
+        title: 'Write Down 100 Things That Make You Smile',
+        description: 'This list forces you to think beyond the obvious and rediscover joy in small, forgotten pleasures.',
+        steps: ['Start with obvious things; they will run out around 30–40', 'Push past the discomfort to find forgotten small joys', 'Notice what categories dominate your list', 'Pick one item from the list and experience it today']
+      },
+      {
+        emoji: '🌐', category: 'Language',
+        title: 'Learn to Say "Thank You" in 10 Languages',
+        description: 'Language opens doors. This tiny exercise builds cultural curiosity and is genuinely useful on your next trip.',
+        steps: ['Start with: Spanish, French, Japanese, Arabic, Swahili', 'Add: Hindi, Mandarin, Russian, Portuguese, German', 'Practice pronunciation using Google Translate audio', 'Use at least one correctly with a native speaker today']
+      },
+      {
+        emoji: '📱', category: 'Wellness',
+        title: 'Go One Full Day Without Social Media',
+        description: 'A single social-media-free day can reset your attention span and dramatically reduce anxiety for days afterward.',
+        steps: ['Remove social apps from your home screen (don\'t delete, just hide)', 'Plan 3 engaging activities to fill potential scroll-time', 'Keep a note of every time you reach for social out of habit', 'Journal how you feel at day\'s end compared to typical days']
+      },
+      {
+        emoji: '🔭', category: 'Science',
+        title: 'Replicate a Classic Science Experiment at Home',
+        description: 'From Archimedes to Newton to Fleming — many landmark discoveries can be demonstrated with household items.',
+        steps: ['Search "famous science experiment you can do at home"', 'Choose one that requires only items you have', 'Follow the steps and record your observations', 'Read about the scientist who first conducted the experiment']
+      },
+    ];
+
+    let currentIndex = 0;
+
+    function getDayIndex() {
+      const today = new Date();
+      return Math.floor((Date.now() - new Date(today.getFullYear(), 0, 0)) / 86400000) % IDEAS.length;
+    }
+
+    function renderIdea(idea) {
+      document.getElementById('idea-count').textContent = `${currentIndex + 1} / ${IDEAS.length}`;
+      const stepsHtml = idea.steps
+        .map((s, i) => `<li><span class="step-num">${i + 1}</span>${s}</li>`)
+        .join('');
+      document.getElementById('content').innerHTML = `
+        <span class="idea-emoji">${idea.emoji}</span>
+        <span class="idea-category">${idea.category}</span>
+        <h2 class="idea-title">${idea.title}</h2>
+        <p class="idea-description">${idea.description}</p>
+        <div class="steps-title">How to Start</div>
+        <ul class="steps">${stepsHtml}</ul>
+      `;
+    }
+
+    function nextIdea() {
+      currentIndex = (currentIndex + 1) % IDEAS.length;
+      renderIdea(IDEAS[currentIndex]);
+    }
+
+    function copyIdea() {
+      const idea = IDEAS[currentIndex];
+      const text = `💡 ${idea.title}\n\n${idea.description}\n\nSteps:\n${idea.steps.map((s,i) => `${i+1}. ${s}`).join('\n')}`;
+      navigator.clipboard
+        ? navigator.clipboard.writeText(text).then(() => alert('Idea copied!'))
+        : alert(text);
+    }
+
+    currentIndex = getDayIndex();
+    renderIdea(IDEAS[currentIndex]);
+  </script>
+</body>
+</html>
