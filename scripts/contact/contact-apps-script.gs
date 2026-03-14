@@ -1,3 +1,13 @@
+/**
+ + Contact Form
+ *
+ * @package      MaximillianGroup/google-site-script-snippets
+ * @author       MaximillianGroup (Max Barrett) maximilliangroup@gmail.com
+ * @license      MIT
+ * @copyright    Copyright (c) 2026 MaximillianGroup.
+ * @description  A simple contact backend sciprt to be used with Apps Scripts contact-frontend-ui-embed.html
+ */
+
 function doPost(e) {
   // --- CONFIGURATION ---
   var myEmail = "YOUR_EMAIL@gmail.com";        
