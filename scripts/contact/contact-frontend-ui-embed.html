@@ -16,14 +16,14 @@
 </style>
 
 <form id="contactForm">
-  <label>Name</label>
-  <input type="text" name="name" required>
+  <label for="name">Name</label>
+  <input id="name" type="text" name="name" required>
   
-  <label>Email</label>
-  <input type="email" name="email" required>
+  <label for=email">Email</label>
+  <input id="email" type="email" name="email" required>
   
-  <label>Message</label>
-  <textarea name="message" rows="4" required></textarea>
+  <label for="message">Message</label>
+  <textarea id="message" name="message" rows="4" required></textarea>
   
   <button type="submit" id="submitBtn">Send Message</button>
 </form>
@@ -40,11 +40,14 @@
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('submitBtn').innerText = "Sending...";
 
-    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-      .then(response => {
-         document.getElementById('contactForm').style.display = 'none';
-         document.getElementById('response').style.display = 'block';
-      })
-      .catch(error => console.error('Error!', error.message));
+   fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+  .then(response => {
+     console.log('Success!', response);
+     document.getElementById('contactForm').style.display = 'none';
+     document.getElementById('response').style.display = 'block';
+  })
+  .catch(error => {
+     console.error('Error!', error.message);
+     alert("There was an error sending your message. Please try again.");
   });
 </script>
