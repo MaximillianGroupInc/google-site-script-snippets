@@ -1,0 +1,50 @@
+/**
+ + Contact Form
+ *
+ * @package      MaximillianGroup/google-site-script-snippets
+ * @author       MaximillianGroup (Max Barrett) maximilliangroup@gmail.com
+ * @license      MIT
+ * @copyright    Copyright (c) 2026 MaximillianGroup.
+ * @description  A simple contact form to be used with Apps Scripts contact-app-script.gs
+ */
+
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  input, textarea { width: 100%; padding: 8px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+  button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+  button:hover { background-color: #45a049; }
+</style>
+
+<form id="contactForm">
+  <label>Name</label>
+  <input type="text" name="name" required>
+  
+  <label>Email</label>
+  <input type="email" name="email" required>
+  
+  <label>Message</label>
+  <textarea name="message" rows="4" required></textarea>
+  
+  <button type="submit" id="submitBtn">Send Message</button>
+</form>
+
+<div id="response" style="display:none; margin-top:10px; color: green;">Message sent successfully!</div>
+
+<script>
+  const form = document.getElementById('contactForm');
+  // REPLACE THE URL BELOW with your Google Apps Script Web App URL
+  const scriptURL = 'YOUR_WEB_APP_URL_HERE';
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').innerText = "Sending...";
+
+    fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+      .then(response => {
+         document.getElementById('contactForm').style.display = 'none';
+         document.getElementById('response').style.display = 'block';
+      })
+      .catch(error => console.error('Error!', error.message));
+  });
+</script>
