@@ -30,6 +30,12 @@ dynamic, interactive content — no server required.
 | News Ticker | `apps-script/news-ticker/` |
 | Stock Ticker | `apps-script/stock-ticker/` |
 
+- [🚀 How to Embed in Google Sites](#-how-to-embed-in-google-sites)
+- [⚠️ Google Sites Gotchas](#️-google-sites-gotchas)
+- [Widget Reference](#widget-reference)
+- [🗂️ Repository Structure](#️-repository-structure)
+- [🔑 API Key Summary](#-api-key-summary)
+
 ---
 
 ## 🚀 How to Embed in Google Sites
@@ -53,6 +59,62 @@ dynamic, interactive content — no server required.
 7. Set *Execute as*: **Me**, *Who has access*: **Anyone**.
 8. Click **Deploy** and copy the web app URL.
 9. In Google Sites: Insert → Embed → **By URL** → paste the web app URL.
+
+> ⚠️ **"Google hasn't verified this app" warning:** On first authorization, Google shows a consent screen
+> warning that the app is unverified. This is normal for any personal Apps Script project you deploy
+> yourself. Click **Advanced** → **Go to [Your Project Name] (unsafe)** to grant the required permissions.
+> The script only accesses URLs you configure (OpenWeatherMap, RSS feeds, etc.) — no data leaves your
+> Google account except those specific fetch calls.
+
+---
+
+## ⚠️ Google Sites Gotchas
+
+Google Sites is notoriously strict with embedded code — it wraps everything in sandboxed iframes,
+blocks many external scripts, and throws CORS errors if you try to fetch from APIs that don't explicitly
+allow cross-origin requests. The split between `snippets/` (client-side) and `apps-script/`
+(server-side via `UrlFetchApp`) is the recommended workaround for these limitations.
+
+### 1. Iframe Height — No `100vh`
+
+Google Sites embed blocks have a fixed pixel height set by the site editor. Inside that iframe,
+`100vh` refers to `100%` of the *iframe's* height, not the device screen. If the iframe is 400 px
+tall but the content naturally wants 450 px, using `100vh` or `min-height: 100vh` creates an
+unwanted double scrollbar. All snippets in this repo use `height: auto` on the body to avoid this.
+**Resize the embed block in Google Sites** to fit your content instead.
+
+### 2. "Google Hasn't Verified This App" Warning
+
+When you first deploy and authorize an Apps Script Web App, Google displays a consent screen saying
+the app is unverified. **This is expected** for any personal script you deploy yourself. Click
+**Advanced** → **Go to [Your Project Name] (unsafe)** to proceed. The script only accesses the
+external URLs you configure (weather API, RSS feeds, etc.).
+
+### 3. Link Targets — Use `target="_blank"` Only
+
+Google Sites iframes block `target="_top"` and `target="_parent"` by default. The only safe way to
+navigate out of a Google Sites embed is `target="_blank"`. All links in these widgets already use
+`target="_blank" rel="noopener noreferrer"`.
+
+### 4. quotable.io Reliability
+
+The `quote-of-day` snippet calls `api.quotable.io`, which has experienced intermittent 502/503
+downtime. The built-in fallback array of 7 curated quotes ensures the widget is never blank, even
+when the API is unavailable.
+
+### 5. Mobile Responsiveness in Embed Blocks
+
+Google Sites dynamically resizes embed blocks on mobile. All widgets use `clamp()` for font sizes
+and `auto-fill`/`minmax` grid columns to reflow gracefully. If you use card-mode layouts (e.g.,
+Stock Ticker `COMPACT_MODE = false`), test the embed at a narrow width (≈ 320 px) in the Sites
+preview and widen the embed block or reduce `minmax` minimums if content overflows.
+
+### 6. CacheService Keeps API Costs Low
+
+The Apps Script backends (`apps-script/`) use `CacheService.getScriptCache()` to store API
+responses for 5 minutes. On a high-traffic site this prevents blowing through the free tiers of
+OpenWeatherMap (1,000 calls/day) or Alpha Vantage (25 calls/day) — up to 288 visitors per day can
+hit the weather widget while only consuming a single API call.
 
 ---
 
