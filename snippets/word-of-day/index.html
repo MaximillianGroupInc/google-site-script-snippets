@@ -326,7 +326,8 @@
       `${MONTHS_FULL[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
 
     function getDayIndex() {
-      const doy = Math.floor((Date.now() - new Date(today.getFullYear(), 0, 0)) / 86400000);
+      const now = new Date();
+      const doy = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0)) / 86400000);
       return doy % WORDS.length;
     }
 
