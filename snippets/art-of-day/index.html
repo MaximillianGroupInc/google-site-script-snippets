@@ -278,12 +278,21 @@
       const imgSrc = art.primaryImageSmall || art.primaryImage;
 
       // Artwork frame
-      document.getElementById('artwork-frame').innerHTML = `
-        <img class="artwork-img" src="${imgSrc}"
-             alt="${art.title}"
-             onerror="this.parentElement.innerHTML='<div class=\\'artwork-placeholder\\'><div class=\\'icon\\'>🎨</div><p>Image unavailable</p></div>'" />
-      `;
+      const artworkFrame = document.getElementById('artwork-frame');
+      artworkFrame.innerHTML = '';
 
+      const img = document.createElement('img');
+      img.className = 'artwork-img';
+      img.src = imgSrc;
+      img.alt = art.title || 'Artwork image';
+      img.addEventListener('error', function () {
+        artworkFrame.innerHTML = `
+          <div class="artwork-placeholder">
+            <div class="icon">🎨</div>
+            <p>Image unavailable</p>
+          </div>`;
+      });
+      artworkFrame.appendChild(img);
       // Title & artist
       document.getElementById('art-title').textContent  = art.title  || 'Untitled';
       document.getElementById('art-artist').textContent = art.artistDisplayName || 'Unknown Artist';
