@@ -276,10 +276,14 @@
 
     async function fetchQuote(symbol) {
       if (FINNHUB_KEY) {
-        const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`);
-        if (!res.ok) return simulatedQuote(symbol); // non-2xx (rate limit, server error, etc.)
-        const data = await res.json();
-        if (data && data.c > 0) return { price: data.c, change: data.d, changePct: data.dp };
+        try {
+          const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`);
+          if (!res.ok) return simulatedQuote(symbol); // non-2xx (rate limit, server error, etc.)
+          const data = await res.json();
+          if (data && data.c > 0) return { price: data.c, change: data.d, changePct: data.dp };
+        } catch (_) {
+          // Network-level failure (offline, DNS error, etc.) — fall through to simulated data
+        }
       }
       // Fallback: simulated data (seeded by symbol hash for consistency within a session)
       return simulatedQuote(symbol);

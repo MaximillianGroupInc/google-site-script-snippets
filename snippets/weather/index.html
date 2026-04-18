@@ -278,6 +278,12 @@
 
     const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
+    function esc(str) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(str || '')));
+      return d.innerHTML;
+    }
+
     function unitLabel()  { return currentUnit === 'imperial' ? '°F' : '°C'; }
     function speedLabel() { return currentUnit === 'imperial' ? 'mph' : 'm/s'; }
 
@@ -300,7 +306,7 @@
 
         if (!wRes.ok) throw new Error(wRes.status === 404 ? 'City not found' : 'Weather fetch failed');
         lastWeather  = await wRes.json();
-        lastForecast = await fRes.json();
+        lastForecast = fRes.ok ? await fRes.json() : {};
         renderWeather(lastWeather, lastForecast);
       } catch (err) {
         showError(err.message);
@@ -320,7 +326,7 @@
         ]);
         if (!wRes.ok) throw new Error('Weather fetch failed');
         lastWeather  = await wRes.json();
-        lastForecast = await fRes.json();
+        lastForecast = fRes.ok ? await fRes.json() : {};
         document.getElementById('city-input').value = `${lastWeather.name},${lastWeather.sys.country}`;
         renderWeather(lastWeather, lastForecast);
       } catch (err) {
@@ -379,8 +385,8 @@
             <div class="feels-like">Feels like ${feelsF}${unit}</div>
           </div>
           <div class="condition-block">
-            <div class="condition">${w.weather[0].description.replace(/\b\w/g, c => c.toUpperCase())}</div>
-            <div class="city-name">${w.name}, ${w.sys.country}</div>
+            <div class="condition">${esc(w.weather[0].description.replace(/\b\w/g, c => c.toUpperCase()))}</div>
+            <div class="city-name">${esc(w.name)}, ${esc(w.sys.country)}</div>
           </div>
         </div>
 
