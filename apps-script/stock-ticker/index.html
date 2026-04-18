@@ -177,8 +177,12 @@
     google.script.run
       .withSuccessHandler(renderTicker)
       .withFailureHandler(function(e) {
-        document.getElementById('ticker-scroll').innerHTML =
-          '<span class="stock-item"><span class="stock-symbol">Error: ' + e.message + '</span></span>';
+        var tickerScroll = document.getElementById('ticker-scroll');
+        var errorMessage = e && e.message ? e.message : 'Unknown error';
+
+        tickerScroll.innerHTML =
+          '<span class="stock-item"><span class="stock-symbol"></span></span>';
+        tickerScroll.querySelector('.stock-symbol').textContent = 'Error: ' + errorMessage;
       })
       .getQuotes();
 
