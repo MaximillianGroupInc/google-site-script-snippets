@@ -124,8 +124,9 @@
       var items = headlines.concat(headlines); // duplicate for seamless loop
       var html  = items.map(function(item, i) {
         var divider = i > 0 ? '<span class="news-divider">◆</span>' : '';
-        var anchor  = item.link && item.link !== '#'
-          ? '<a class="news-item" href="' + item.link + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(item.title) + '</a>'
+        var safeHref = safeLink(item.link);
+        var anchor  = safeHref
+          ? '<a class="news-item" href="' + escapeAttr(safeHref) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(item.title) + '</a>'
           : '<span class="news-item">' + escapeHtml(item.title) + '</span>';
         return divider + anchor;
       }).join('');
@@ -133,10 +134,22 @@
       document.getElementById('ticker-scroll').innerHTML = html;
     }
 
+    // Allow only http/https URLs to prevent javascript:/data: injection
+    function safeLink(url) {
+      if (!url || url === '#') return null;
+      return /^https?:\/\//i.test(url) ? url : null;
+    }
+
     function escapeHtml(text) {
       var d = document.createElement('div');
-      d.appendChild(document.createTextNode(text));
+      d.appendChild(document.createTextNode(text || ''));
       return d.innerHTML;
+    }
+
+    // Escape a value for use inside an HTML attribute (handles &, quotes, <, >)
+    function escapeAttr(text) {
+      var map = { '&':'&amp;', '"':'&quot;', "'": '&#39;', '<':'&lt;', '>':'&gt;' };
+      return String(text).replace(/[&"'<>]/g, function(c) { return map[c]; });
     }
 
     // Fetch headlines via the server-side Apps Script function

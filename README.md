@@ -10,17 +10,17 @@ dynamic, interactive content — no server required.
 
 | Widget | Description | API Key? | Folder |
 |--------|-------------|----------|--------|
-| [⏰ Time & Date](#️-time--date) | Live clock and calendar | None | `snippets/time-and-date/` |
-| [💬 Quote of the Day](#-quote-of-the-day) | Inspirational quotes | None | `snippets/quote-of-day/` |
-| [📜 Poem of the Day](#-poem-of-the-day) | Classic poetry daily | None | `snippets/poem-of-day/` |
-| [📖 Word of the Day](#-word-of-the-day) | Vocabulary builder | None | `snippets/word-of-day/` |
-| [💡 Idea of the Day](#-idea-of-the-day) | Creative daily prompts | None | `snippets/idea-of-day/` |
-| [🖼️ Art of the Day](#️-art-of-the-day) | Met Museum masterpieces | None | `snippets/art-of-day/` |
-| [🔬 Science Fact of the Day](#-science-fact-of-the-day) | Curated STEM facts | None | `snippets/science-fact-of-day/` |
-| [✈️ Travel Deal of the Day](#️-travel-deal-of-the-day) | Curated destination guide | None | `snippets/travel-deal-of-day/` |
-| [☁️ Weather Widget](#️-weather-widget) | Current weather + forecast | OpenWeatherMap (free) | `snippets/weather/` |
-| [📰 News Ticker](#-news-ticker) | Scrolling RSS headlines | None (rss2json optional) | `snippets/news-ticker/` |
-| [📈 Stock Ticker](#-stock-ticker) | Live or simulated stocks | Finnhub (free, optional) | `snippets/stock-ticker/` |
+| [⏰ Time & Date](#time--date) | Live clock and calendar | None | `snippets/time-and-date/` |
+| [💬 Quote of the Day](#quote-of-the-day) | Inspirational quotes | None | `snippets/quote-of-day/` |
+| [📜 Poem of the Day](#poem-of-the-day) | Classic poetry daily | None | `snippets/poem-of-day/` |
+| [📖 Word of the Day](#word-of-the-day) | Vocabulary builder | None | `snippets/word-of-day/` |
+| [💡 Idea of the Day](#idea-of-the-day) | Creative daily prompts | None | `snippets/idea-of-day/` |
+| [🖼️ Art of the Day](#art-of-the-day) | Met Museum masterpieces | None | `snippets/art-of-day/` |
+| [🔬 Science Fact of the Day](#science-fact-of-the-day) | Curated STEM facts | None | `snippets/science-fact-of-day/` |
+| [✈️ Travel Deal of the Day](#travel-deal-of-the-day) | Curated destination guide | None | `snippets/travel-deal-of-day/` |
+| [☁️ Weather Widget](#weather-widget) | Current weather + forecast | OpenWeatherMap (free) | `snippets/weather/` |
+| [📰 News Ticker](#news-ticker) | Scrolling RSS headlines | None (rss2json optional) | `snippets/news-ticker/` |
+| [📈 Stock Ticker](#stock-ticker) | Live or simulated stocks | Finnhub (free, optional) | `snippets/stock-ticker/` |
 
 **Apps Script versions** (server-side, no CORS issues) are in `apps-script/`:
 
@@ -30,11 +30,11 @@ dynamic, interactive content — no server required.
 | News Ticker | `apps-script/news-ticker/` |
 | Stock Ticker | `apps-script/stock-ticker/` |
 
-- [🚀 How to Embed in Google Sites](#-how-to-embed-in-google-sites)
-- [⚠️ Google Sites Gotchas](#️-google-sites-gotchas)
+- [🚀 How to Embed in Google Sites](#how-to-embed-in-google-sites)
+- [⚠️ Google Sites Gotchas](#google-sites-gotchas)
 - [Widget Reference](#widget-reference)
-- [🗂️ Repository Structure](#️-repository-structure)
-- [🔑 API Key Summary](#-api-key-summary)
+- [🗂️ Repository Structure](#repository-structure)
+- [🔑 API Key Summary](#api-key-summary)
 
 ---
 

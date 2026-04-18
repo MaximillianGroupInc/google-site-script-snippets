@@ -236,6 +236,13 @@
     function unitLabel()  { return currentUnit === 'imperial' ? '°F' : '°C'; }
     function speedLabel() { return currentUnit === 'imperial' ? 'mph' : 'm/s'; }
 
+    // HTML-escape a string before inserting it via innerHTML
+    function esc(text) {
+      var d = document.createElement('div');
+      d.appendChild(document.createTextNode(text !== null && text !== undefined ? String(text) : ''));
+      return d.innerHTML;
+    }
+
     function search() {
       var v = document.getElementById('city-input').value.trim();
       if (v) currentCity = v;
@@ -285,6 +292,9 @@
           + '</div>';
       }).join('');
 
+      var condition = esc(w.weather[0].description.replace(/\b\w/g, function(c){ return c.toUpperCase(); }));
+      var cityName  = esc(w.name) + ', ' + esc(w.sys.country);
+
       document.getElementById('weather-content').innerHTML =
         '<div class="current">'
         + '<div class="weather-icon">' + icon + '</div>'
@@ -293,8 +303,8 @@
           + '<div class="feels-like">Feels like ' + feelsTemp + unit + '</div>'
         + '</div>'
         + '<div class="condition-block">'
-          + '<div class="condition">' + w.weather[0].description.replace(/\b\w/g, function(c){ return c.toUpperCase(); }) + '</div>'
-          + '<div class="city-name">' + w.name + ', ' + w.sys.country + '</div>'
+          + '<div class="condition">' + condition + '</div>'
+          + '<div class="city-name">' + cityName + '</div>'
         + '</div>'
         + '</div>'
         + '<div class="stats">'
