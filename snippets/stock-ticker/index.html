@@ -276,7 +276,8 @@
 
     async function fetchQuote(symbol) {
       if (FINNHUB_KEY) {
-        const res  = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`);
+        const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`);
+        if (!res.ok) return simulatedQuote(symbol); // non-2xx (rate limit, server error, etc.)
         const data = await res.json();
         if (data && data.c > 0) return { price: data.c, change: data.d, changePct: data.dp };
       }
@@ -305,6 +306,12 @@
           .filter(r => r.status === 'fulfilled')
           .map(r => r.value);
       } catch (_) {
+        stockData = [];
+      }
+
+      // If every request failed (e.g. full network outage), fall back to simulated data
+      // so the widget never stays stuck on "Loading…"
+      if (stockData.length === 0) {
         stockData = STOCKS.map(s => ({ ...s, ...simulatedQuote(s.symbol) }));
       }
 
@@ -329,7 +336,11 @@
     }
 
     function renderTicker() {
-      if (stockData.length === 0) return;
+      if (stockData.length === 0) {
+        document.getElementById('ticker-scroll').innerHTML =
+          '<span class="stock-item"><span class="stock-symbol" style="color:#94a3b8">Unable to load stock data</span></span>';
+        return;
+      }
 
       const items  = [...stockData, ...stockData]; // duplicate for seamless loop
       const html   = items.map((s, i) => {
