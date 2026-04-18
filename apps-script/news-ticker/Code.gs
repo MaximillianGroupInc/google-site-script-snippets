@@ -93,9 +93,10 @@ function getHeadlines() {
       var feedTitle = root.getChildText('title', atomNs) || '';
       entries.slice(0, MAX_ITEMS).forEach(function(entry) {
         var linkEl = entry.getChild('link', atomNs);
+        var hrefAttr = linkEl ? linkEl.getAttribute('href') : null;
         items.push({
           title:   entry.getChildText('title',   atomNs) || '(no title)',
-          link:    linkEl ? (linkEl.getAttribute('href') || '#').getValue() : '#',
+          link:    hrefAttr ? hrefAttr.getValue() : '#',
           pubDate: entry.getChildText('updated', atomNs) || '',
           source:  feedTitle
         });
