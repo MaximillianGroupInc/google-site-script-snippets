@@ -217,6 +217,10 @@
       return d.innerHTML;
     }
 
+    function safeUrl(url) {
+      return /^https?:\/\//i.test(url) ? url : 'https://www.metmuseum.org';
+    }
+
     async function init() {
       try {
         const res  = await fetch(
@@ -318,7 +322,7 @@
       document.getElementById('art-description').textContent = desc || '';
 
       // Link
-      document.getElementById('met-link').href = art.objectURL || 'https://www.metmuseum.org';
+      document.getElementById('met-link').href = safeUrl(art.objectURL);
 
       document.getElementById('card-info').style.display = 'block';
     }
