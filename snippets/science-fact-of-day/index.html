@@ -349,7 +349,9 @@
 
     function getDayIndex() {
       const today = new Date();
-      return Math.floor((Date.now() - new Date(today.getFullYear(), 0, 0)) / 86400000) % FACTS.length;
+      const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+      const startOfYearUtc = Date.UTC(today.getFullYear(), 0, 0);
+      return Math.floor((todayUtc - startOfYearUtc) / 86400000) % FACTS.length;
     }
 
     function renderFact(fact) {
