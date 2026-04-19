@@ -208,7 +208,10 @@
       if (navigator.share) {
         navigator.share({ text });
       } else if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => alert('Quote copied to clipboard!'));
+        navigator.clipboard
+          .writeText(text)
+          .then(() => alert('Quote copied to clipboard!'))
+          .catch(() => alert(`Copy failed. You can still copy/share this quote:\n\n${text}`));
       }
     }
 
