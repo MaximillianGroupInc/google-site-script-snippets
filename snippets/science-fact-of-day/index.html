@@ -374,7 +374,10 @@
       const fact = FACTS[currentIndex];
       const text = `🔬 ${fact.headline}\n\n${fact.detail}\n\nSource: ${fact.source}`;
       navigator.clipboard
-        ? navigator.clipboard.writeText(text).then(() => alert('Fact copied!'))
+        ? navigator.clipboard
+            .writeText(text)
+            .then(() => alert('Fact copied!'))
+            .catch(() => alert(`Could not copy automatically. Here is the fact:\n\n${text}`))
         : alert(text);
     }
 
