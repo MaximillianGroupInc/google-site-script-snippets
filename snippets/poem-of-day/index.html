@@ -222,7 +222,10 @@
       if (!currentPoem) return;
       const text = `${currentPoem.title}\nby ${currentPoem.author}\n\n${currentPoem.lines.join('\n')}`;
       navigator.clipboard
-        ? navigator.clipboard.writeText(text).then(() => alert('Poem copied!'))
+        ? navigator.clipboard
+            .writeText(text)
+            .then(() => alert('Poem copied!'))
+            .catch(() => alert(text))
         : alert(text);
     }
 
