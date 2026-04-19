@@ -323,15 +323,19 @@
         container.innerHTML = '<div class="status-msg">No headlines found.</div>';
         return;
       }
-      container.innerHTML = headlines.map((item, i) => `
-        <a class="news-card" href="${escAttr(safeUrl(item.link))}" target="_blank" rel="noopener noreferrer">
+      container.innerHTML = headlines.map((item, i) => {
+        const href = safeUrl(item.link);
+        const cardBody = `
           <div class="news-card-num">${String(i + 1).padStart(2,'0')}</div>
           <div>
             <div class="news-card-title">${esc(item.title)}</div>
             <div class="news-card-source">${esc(item.source)}</div>
           </div>
-        </a>
-      `).join('');
+        `;
+        return href !== '#'
+          ? `<a class="news-card" href="${escAttr(href)}" target="_blank" rel="noopener noreferrer">${cardBody}</a>`
+          : `<div class="news-card">${cardBody}</div>`;
+      }).join('');
     }
 
     // Initialise
