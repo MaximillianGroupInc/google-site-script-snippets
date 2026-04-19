@@ -225,8 +225,11 @@
         const data = await res.json();
         objectIds  = data.objectIDs || [];
         if (objectIds.length === 0) { showError(); return; }
-        // Deterministically pick today's starting artwork using day-of-year seed
-        const doy  = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+        // Deterministically pick today's starting artwork using a UTC day-of-year seed
+        const now = new Date();
+        const startOfYearUtc = Date.UTC(now.getUTCFullYear(), 0, 0);
+        const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+        const doy = Math.floor((todayUtc - startOfYearUtc) / 86400000);
         const startIdx = doy % objectIds.length;
         await loadArtworkByIndex(startIdx);
       } catch (_) {
