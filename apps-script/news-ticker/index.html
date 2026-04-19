@@ -156,8 +156,9 @@
     google.script.run
       .withSuccessHandler(renderTicker)
       .withFailureHandler(function(e) {
+        var errorMessage = (e && e.message) ? e.message : (typeof e === 'string' ? e : 'Unknown error');
         document.getElementById('ticker-scroll').innerHTML =
-          '<span class="news-item">Error loading news: ' + escapeHtml(e.message) + '</span>';
+          '<span class="news-item">Error loading news: ' + escapeHtml(errorMessage) + '</span>';
       })
       .getHeadlines();
 
