@@ -171,13 +171,19 @@
       'Dover Beach', 'The Waste Land',
     ];
 
+    function getDayOfYearUTC(date) {
+      const currentUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+      const yearStartUtc = Date.UTC(date.getFullYear(), 0, 0);
+      return Math.floor((currentUtc - yearStartUtc) / 86400000);
+    }
+
     async function fetchPoem() {
       document.getElementById('content').innerHTML =
         '<div class="loading"><span class="spinner"></span>Loading poem…</div>';
       try {
         let url;
         if (USE_DAILY_SEED) {
-          const doy   = Math.floor((Date.now() - new Date(now.getFullYear(), 0, 0)) / 86400000);
+          const doy   = getDayOfYearUTC(now);
           const title = encodeURIComponent(CURATED[doy % CURATED.length]);
           url = `https://poetrydb.org/title/${title}`;
         } else {
