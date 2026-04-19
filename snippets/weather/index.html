@@ -373,7 +373,11 @@
         </div>
       `).join('');
 
-      const visibility = w.visibility ? `${(w.visibility / 1000).toFixed(1)} km` : 'N/A';
+      const visibility = typeof w.visibility === 'number'
+        ? currentUnit === 'imperial'
+          ? `${(w.visibility / 1609.344).toFixed(1)} mi`
+          : `${(w.visibility / 1000).toFixed(1)} km`
+        : 'N/A';
       const sunrise    = new Date(w.sys.sunrise * 1000).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
       const sunset     = new Date(w.sys.sunset  * 1000).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
 
