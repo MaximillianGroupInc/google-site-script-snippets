@@ -357,7 +357,10 @@
       const entry = WORDS[currentIndex];
       const text  = `Word of the Day: ${entry.word} (${entry.pos})\n${entry.definition}\n\nExample: "${entry.example}"`;
       navigator.clipboard
-        ? navigator.clipboard.writeText(text).then(() => alert('Copied!'))
+        ? navigator.clipboard
+            .writeText(text)
+            .then(() => alert('Copied!'))
+            .catch(() => alert(text))
         : alert(text);
     }
 
