@@ -392,7 +392,10 @@
       const idea = IDEAS[currentIndex];
       const text = `💡 ${idea.title}\n\n${idea.description}\n\nSteps:\n${idea.steps.map((s,i) => `${i+1}. ${s}`).join('\n')}`;
       navigator.clipboard
-        ? navigator.clipboard.writeText(text).then(() => alert('Idea copied!'))
+        ? navigator.clipboard
+            .writeText(text)
+            .then(() => alert('Idea copied!'))
+            .catch(() => alert(`Unable to copy automatically. Here is the idea text:\n\n${text}`))
         : alert(text);
     }
 
