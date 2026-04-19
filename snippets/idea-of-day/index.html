@@ -359,7 +359,13 @@
 
     function getDayIndex() {
       const today = new Date();
-      return Math.floor((Date.now() - new Date(today.getFullYear(), 0, 0)) / 86400000) % IDEAS.length;
+      const startOfYearUtc = Date.UTC(today.getUTCFullYear(), 0, 0);
+      const todayUtc = Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate()
+      );
+      return Math.floor((todayUtc - startOfYearUtc) / 86400000) % IDEAS.length;
     }
 
     function renderIdea(idea) {
