@@ -183,7 +183,8 @@
         renderQuote(currentQuote);
       } catch (_) {
         // Fall back to curated list keyed by day-of-year for consistency
-        const doy = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+        const _now = new Date();
+        const doy = Math.floor((Date.UTC(_now.getFullYear(), _now.getMonth(), _now.getDate()) - Date.UTC(_now.getFullYear(), 0, 0)) / 86400000);
         currentQuote = FALLBACKS[doy % FALLBACKS.length];
         renderQuote(currentQuote);
       }
