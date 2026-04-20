@@ -334,8 +334,12 @@
     }
 
     function showError(msg) {
-      document.getElementById('weather-content').innerHTML =
-        '<div class="error-state">⚠️ ' + (msg || 'Could not load weather.') + '</div>';
+      var container = document.getElementById('weather-content');
+      var error = document.createElement('div');
+      error.className = 'error-state';
+      error.textContent = '⚠️ ' + (msg || 'Could not load weather.');
+      container.innerHTML = '';
+      container.appendChild(error);
     }
 
     // Auto-load on start
