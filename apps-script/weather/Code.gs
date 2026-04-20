@@ -44,6 +44,9 @@ function doGet() {
  * @returns {Object} { weather, forecast } or { error: message }
  */
 function getWeather(city, units) {
+  if (!OPENWEATHER_API_KEY || OPENWEATHER_API_KEY === 'YOUR_API_KEY_HERE') {
+    return { error: 'API key not configured. Set OPENWEATHER_API_KEY in Code.gs.' };
+  }
   try {
     units = units || DEFAULT_UNITS;
     var q  = encodeURIComponent(city || DEFAULT_CITY);
