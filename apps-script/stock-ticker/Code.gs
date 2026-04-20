@@ -131,11 +131,18 @@ function fetchAlphaVantage(symbol) {
     if (resp.getResponseCode() !== 200) return null;
     var data = JSON.parse(resp.getContentText());
     var q    = data['Global Quote'];
-    if (!q || !q['05. price']) return null;
+    if (!q || !q['05. price'] || !q['09. change'] || !q['10. change percent']) return null;
+
+    var price = parseFloat(q['05. price']);
+    var change = parseFloat(q['09. change']);
+    var changePct = parseFloat(q['10. change percent'].replace('%', ''));
+
+    if (isNaN(price) || isNaN(change) || isNaN(changePct)) return null;
+
     return {
-      price:     parseFloat(q['05. price']),
-      change:    parseFloat(q['09. change']),
-      changePct: parseFloat(q['10. change percent'].replace('%',''))
+      price:     price,
+      change:    change,
+      changePct: changePct
     };
   } catch (e) {
     return null;
