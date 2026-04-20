@@ -351,7 +351,7 @@
       const unit     = unitLabel();
       const speed    = speedLabel();
 
-      // Build 5-day forecast (one entry per day at noon)
+      // Build 5-day forecast: group all 3-hour entries by day, tracking daily min/max temps and the first icon encountered
       const dailyMap = {};
       (f.list || []).forEach(item => {
         const date = new Date(item.dt * 1000);
