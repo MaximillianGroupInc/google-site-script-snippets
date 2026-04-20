@@ -143,13 +143,8 @@
   </div>
 
   <script>
-    var isSimulated = false;
-
     function renderTicker(quotes) {
       if (!quotes || quotes.length === 0) return;
-
-      isSimulated = quotes.some(function(q) { return q.simulated; });
-
       var items = quotes.concat(quotes); // duplicate for seamless loop
       var html  = items.map(function(s, i) {
         var chg      = s.changePct;
