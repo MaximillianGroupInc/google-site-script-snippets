@@ -137,7 +137,7 @@
         <div class="loading"><span class="spinner"></span>Finding today's poem…</div>
       </div>
       <div class="actions">
-        <button onclick="fetchPoem()">Another Poem</button>
+        <button onclick="fetchPoem(false)">Another Poem</button>
         <button onclick="copyPoem()">Copy Text</button>
       </div>
     </div>
@@ -177,13 +177,13 @@
       return Math.floor((currentUtc - yearStartUtc) / 86400000);
     }
 
-    async function fetchPoem() {
+    async function fetchPoem(useDaily = USE_DAILY_SEED) {
       document.getElementById('content').innerHTML =
         '<div class="loading"><span class="spinner"></span>Loading poem…</div>';
       try {
         let url;
-        if (USE_DAILY_SEED) {
-          const doy   = getDayOfYearUTC(now);
+        if (useDaily) {
+          const doy   = getDayOfYearUTC(new Date());
           const title = encodeURIComponent(CURATED[doy % CURATED.length]);
           url = `https://poetrydb.org/title/${title}`;
         } else {
