@@ -448,8 +448,12 @@
     }
 
     function showError(msg) {
-      document.getElementById('weather-content').innerHTML =
-        `<div class="error-state">⚠️ ${msg || 'Could not load weather. Check your city name and API key.'}</div>`;
+      const weatherContent = document.getElementById('weather-content');
+      const errorState = document.createElement('div');
+      errorState.className = 'error-state';
+      errorState.textContent = `⚠️ ${msg || 'Could not load weather. Check your city name and API key.'}`;
+      weatherContent.innerHTML = '';
+      weatherContent.appendChild(errorState);
     }
 
     function showSetup() {
