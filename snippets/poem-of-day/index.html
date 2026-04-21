@@ -172,8 +172,8 @@
     ];
 
     function getDayOfYearUTC(date) {
-      const currentUtc = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
-      const yearStartUtc = Date.UTC(date.getFullYear(), 0, 0);
+      const currentUtc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+      const yearStartUtc = Date.UTC(date.getUTCFullYear(), 0, 0);
       return Math.floor((currentUtc - yearStartUtc) / 86400000);
     }
 
