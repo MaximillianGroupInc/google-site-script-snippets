@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poem of the Day</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Roboto:wght@300;400&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #faf7f2;
+      height: auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      max-width: 640px;
+      width: 100%;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: #3d2b1f;
+      color: #e8d5b7;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-header .label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 400;
+      opacity: 0.8;
+    }
+
+    .card-header .date-badge {
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.15);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .card-body { padding: 1.75rem 2rem 2rem; }
+
+    .poem-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      color: #2c1810;
+      line-height: 1.2;
+      margin-bottom: 0.3rem;
+    }
+
+    .poem-author {
+      font-size: 0.88rem;
+      color: #8b6355;
+      margin-bottom: 1.5rem;
+      font-style: italic;
+    }
+
+    .poem-lines {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(0.9rem, 2vw, 1.05rem);
+      color: #3d2b1f;
+      line-height: 2;
+      white-space: pre-wrap;
+      max-height: 420px;
+      overflow-y: auto;
+      border-left: 3px solid #e8d5b7;
+      padding-left: 1rem;
+    }
+
+    .poem-lines::-webkit-scrollbar { width: 4px; }
+    .poem-lines::-webkit-scrollbar-track { background: #faf7f2; }
+    .poem-lines::-webkit-scrollbar-thumb { background: #c9a882; border-radius: 2px; }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.4rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #3d2b1f;
+      color: #e8d5b7;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #5a3f2d; }
+
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid #d4b896;
+      border-top-color: #3d2b1f;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading { text-align: center; color: #a07858; padding: 2.5rem 0; }
+    .error   { color: #b91c1c; font-size: 0.88rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <span class="label">📜 Poem of the Day</span>
+      <span class="date-badge" id="today-label"></span>
+    </div>
+    <div class="card-body">
+      <div id="content">
+        <div class="loading"><span class="spinner"></span>Finding today's poem…</div>
+      </div>
+      <div class="actions">
+        <button onclick="fetchPoem(false)">Another Poem</button>
+        <button onclick="copyPoem()">Copy Text</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // CONFIGURATION
+    // API: https://poetrydb.org  — completely free, no key required
+    // To pin a specific poem per day, set USE_DAILY_SEED = true.
+    // ---------------------------------------------------------------------------
+    const USE_DAILY_SEED = true;   // true = same poem all day; false = random each load
+
+    let currentPoem = null;
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(str)));
+      return d.innerHTML;
+    }
+
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now     = new Date();
+    document.getElementById('today-label').textContent =
+      `${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+    // Curated list of beloved poem titles for day-seeded selection
+    const CURATED = [
+      'The Road Not Taken', 'Invictus', 'If', 'Ozymandias', 'The Raven',
+      'Annabel Lee', 'The Love Song of J. Alfred Prufrock', 'Ode to a Nightingale',
+      'Dover Beach', 'The Waste Land',
+    ];
+
+    function getDayOfYearUTC(date) {
+      const currentUtc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+      const yearStartUtc = Date.UTC(date.getUTCFullYear(), 0, 0);
+      return Math.floor((currentUtc - yearStartUtc) / 86400000);
+    }
+
+    async function fetchPoem(useDaily = USE_DAILY_SEED) {
+      document.getElementById('content').innerHTML =
+        '<div class="loading"><span class="spinner"></span>Loading poem…</div>';
+      try {
+        let url;
+        if (useDaily) {
+          const doy   = getDayOfYearUTC(new Date());
+          const title = encodeURIComponent(CURATED[doy % CURATED.length]);
+          url = `https://poetrydb.org/title/${title}`;
+        } else {
+          url = 'https://poetrydb.org/random/1';
+        }
+        const res  = await fetch(url);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0 || data.status === 404) throw new Error();
+        currentPoem = data[0];
+        renderPoem(currentPoem);
+      } catch (_) {
+        // Fallback: fetch a truly random poem
+        try {
+          const res  = await fetch('https://poetrydb.org/random/1');
+          const data = await res.json();
+          currentPoem = data[0];
+          renderPoem(currentPoem);
+        } catch (__) {
+          document.getElementById('content').innerHTML =
+            '<div class="error">Could not load poem. Please check your connection.</div>';
+        }
+      }
+    }
+
+    function renderPoem(p) {
+      const lineCount = p.lines.length;
+      document.getElementById('content').innerHTML = `
+        <h2 class="poem-title">${esc(p.title)}</h2>
+        <div class="poem-author">by ${esc(p.author)} · ${lineCount} lines</div>
+        <div class="poem-lines">${p.lines.map(esc).join('\n')}</div>
+      `;
+    }
+
+    function copyPoem() {
+      if (!currentPoem) return;
+      const text = `${currentPoem.title}\nby ${currentPoem.author}\n\n${currentPoem.lines.join('\n')}`;
+      navigator.clipboard
+        ? navigator.clipboard
+            .writeText(text)
+            .then(() => alert('Poem copied!'))
+            .catch(() => alert(text))
+        : alert(text);
+    }
+
+    fetchPoem();
+  </script>
+</body>
+</html>

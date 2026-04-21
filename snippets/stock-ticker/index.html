@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Ticker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&family=Roboto:wght@400;500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ticker-height: 48px;
+      --ticker-bg:     #0d0d0d;
+      --up-color:      #22c55e;
+      --down-color:    #ef4444;
+      --flat-color:    #94a3b8;
+      --speed:         35s;
+    }
+
+    body {
+      background: var(--ticker-bg);
+      overflow: hidden;
+      height: var(--ticker-height);
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .ticker-wrap {
+      width: 100%;
+      height: var(--ticker-height);
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+    }
+
+    .ticker-label {
+      flex-shrink: 0;
+      background: #1a3a1a;
+      color: var(--up-color);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+      z-index: 2;
+      box-shadow: 4px 0 8px rgba(0,0,0,0.6);
+      border-right: 1px solid #1f3a1f;
+    }
+
+    .ticker-body {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .ticker-body::before,
+    .ticker-body::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 30px;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .ticker-body::before { left: 0;  background: linear-gradient(to right, var(--ticker-bg), transparent); }
+    .ticker-body::after  { right: 0; background: linear-gradient(to left,  var(--ticker-bg), transparent); }
+
+    .ticker-scroll {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: scroll-left var(--speed) linear infinite;
+      will-change: transform;
+    }
+
+    .ticker-scroll:hover { animation-play-state: paused; }
+
+    @keyframes scroll-left {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .stock-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0 1.1rem;
+      cursor: default;
+      user-select: none;
+    }
+
+    .stock-symbol {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #cbd5e1;
+      letter-spacing: 0.05em;
+    }
+
+    .stock-price {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #e2e8f0;
+    }
+
+    .stock-change {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 0.1rem;
+    }
+
+    .stock-change.up   { color: var(--up-color);   }
+    .stock-change.down { color: var(--down-color);  }
+    .stock-change.flat { color: var(--flat-color);  }
+
+    .divider {
+      color: #222;
+      font-size: 1.2rem;
+      padding: 0 0.2rem;
+      user-select: none;
+    }
+
+    /* =========================================================
+       CARD MODE (COMPACT_MODE = false)
+    ========================================================= */
+    body.card-mode {
+      height: auto;
+      overflow: auto;
+      background: #0d0d0d;
+    }
+
+    .stocks-grid-wrap {
+      display: none;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .stocks-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .stocks-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--up-color);
+    }
+
+    .last-updated {
+      font-size: 0.7rem;
+      color: #475569;
+    }
+
+    .refresh-btn {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #94a3b8;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-family: 'Roboto', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .refresh-btn:hover { background: #222; color: #e2e8f0; }
+
+    .stocks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.6rem;
+    }
+
+    .stock-card {
+      background: #161616;
+      border: 1px solid #222;
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+    }
+
+    .sc-symbol { font-size: 0.78rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.08em; margin-bottom: 0.2rem; }
+    .sc-name   { font-size: 0.7rem;  color: #475569;  margin-bottom: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sc-price  { font-family: 'Roboto Mono', monospace; font-size: 1.2rem; font-weight: 500; color: #e2e8f0; }
+    .sc-change { font-family: 'Roboto Mono', monospace; font-size: 0.8rem; margin-top: 0.2rem; display: flex; gap: 0.4rem; }
+
+    .sc-change .badge {
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+    }
+
+    .badge.up   { background: rgba(34,197,94,0.15); color: var(--up-color);  }
+    .badge.down { background: rgba(239,68,68,0.15);  color: var(--down-color); }
+    .badge.flat { background: rgba(148,163,184,0.15); color: var(--flat-color); }
+
+    .status-msg { text-align: center; color: #475569; padding: 2rem; font-size: 0.85rem; line-height: 1.7; }
+  </style>
+</head>
+<body>
+
+  <!-- SLIM TICKER (default) -->
+  <div class="ticker-wrap" id="ticker-wrap">
+    <div class="ticker-label">
+      <span>📈</span> STOCKS
+    </div>
+    <div class="ticker-body">
+      <div class="ticker-scroll" id="ticker-scroll">
+        <span class="stock-item"><span class="stock-symbol">Loading…</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD GRID (COMPACT_MODE = false) -->
+  <div class="stocks-grid-wrap" id="stocks-grid-wrap">
+    <div class="stocks-header">
+      <span class="stocks-title">📈 Market Overview</span>
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <span class="last-updated" id="last-updated"></span>
+        <button class="refresh-btn" onclick="loadStocks()">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="stocks-grid" id="stocks-grid"></div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // CONFIGURATION
+    // ---------------------------------------------------------------------------
+
+    // COMPACT_MODE = true  → slim horizontal ticker bar
+    // COMPACT_MODE = false → card grid showing each stock
+    const COMPACT_MODE = true;
+
+    // Stocks to display. Format: { symbol, name }
+    const STOCKS = [
+      { symbol: 'AAPL',  name: 'Apple' },
+      { symbol: 'MSFT',  name: 'Microsoft' },
+      { symbol: 'GOOGL', name: 'Alphabet' },
+      { symbol: 'AMZN',  name: 'Amazon' },
+      { symbol: 'META',  name: 'Meta' },
+      { symbol: 'NVDA',  name: 'NVIDIA' },
+      { symbol: 'TSLA',  name: 'Tesla' },
+      { symbol: 'BRK-B', name: 'Berkshire B' },
+      { symbol: 'JPM',   name: 'JPMorgan' },
+      { symbol: 'V',     name: 'Visa' },
+    ];
+
+    // Set FINNHUB_KEY to your free API key from https://finnhub.io
+    // If blank, widget uses simulated data (great for demos).
+    const FINNHUB_KEY = '';
+
+    // Ticker speed (COMPACT_MODE only) — lower = faster
+    const TICKER_SPEED = '35s';
+
+    // Refresh interval in milliseconds (15 min default to stay within free tier limits)
+    const REFRESH_MS = 15 * 60 * 1000;
+
+    // ---------------------------------------------------------------------------
+
+    let stockData = [];
+
+    async function fetchQuote(symbol) {
+      if (FINNHUB_KEY) {
+        try {
+          const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`);
+          if (!res.ok) return simulatedQuote(symbol); // non-2xx (rate limit, server error, etc.)
+          const data = await res.json();
+          if (data && data.c > 0) return { price: data.c, change: data.d, changePct: data.dp };
+        } catch (_) {
+          // Network-level failure (offline, DNS error, etc.) — fall through to simulated data
+        }
+      }
+      // Fallback: simulated data (seeded by symbol hash for consistency within a session)
+      return simulatedQuote(symbol);
+    }
+
+    function simulatedQuote(symbol) {
+      // Generate a deterministic pseudo-price based on symbol + current hour
+      const seed   = [...symbol].reduce((a, c) => a + c.charCodeAt(0), 0);
+      const hour   = new Date().getHours();
+      const price  = (seed % 800) + 50 + Math.sin(seed * hour) * 20;
+      const change = Math.sin(seed + hour) * 3.5;
+      return { price: +price.toFixed(2), change: +change.toFixed(2), changePct: +((change/price)*100).toFixed(2) };
+    }
+
+    async function loadStocks() {
+      try {
+        const results = await Promise.allSettled(
+          STOCKS.map(async s => {
+            const q = await fetchQuote(s.symbol);
+            return { ...s, ...q };
+          })
+        );
+        stockData = results
+          .filter(r => r.status === 'fulfilled')
+          .map(r => r.value);
+      } catch (_) {
+        stockData = [];
+      }
+
+      // If every request failed (e.g. full network outage), fall back to simulated data
+      // so the widget never stays stuck on "Loading…"
+      if (stockData.length === 0) {
+        stockData = STOCKS.map(s => ({ ...s, ...simulatedQuote(s.symbol) }));
+      }
+
+      if (COMPACT_MODE) renderTicker();
+      else renderCards();
+    }
+
+    function arrowFor(chg) {
+      if (chg > 0) return '▲';
+      if (chg < 0) return '▼';
+      return '—';
+    }
+
+    function classFor(chg) {
+      if (chg > 0) return 'up';
+      if (chg < 0) return 'down';
+      return 'flat';
+    }
+
+    function formatPrice(p) {
+      return p != null ? p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+    }
+
+    function renderTicker() {
+      if (stockData.length === 0) {
+        document.getElementById('ticker-scroll').innerHTML =
+          '<span class="stock-item"><span class="stock-symbol" style="color:#94a3b8">Unable to load stock data</span></span>';
+        return;
+      }
+
+      const items  = [...stockData, ...stockData]; // duplicate for seamless loop
+      const html   = items.map((s, i) => {
+        const cls    = classFor(s.changePct);
+        const sign   = s.changePct >= 0 ? '+' : '';
+        const pct    = s.changePct != null ? `${sign}${s.changePct.toFixed(2)}%` : '';
+        const divider = i > 0 ? '<span class="divider">|</span>' : '';
+        return `${divider}
+          <span class="stock-item">
+            <span class="stock-symbol">${s.symbol}</span>
+            <span class="stock-price">$${formatPrice(s.price)}</span>
+            <span class="stock-change ${cls}">${arrowFor(s.changePct)} ${pct}</span>
+          </span>`;
+      }).join('');
+
+      document.getElementById('ticker-scroll').innerHTML = html;
+      document.documentElement.style.setProperty('--speed', TICKER_SPEED);
+    }
+
+    function renderCards() {
+      document.body.classList.add('card-mode');
+      document.getElementById('ticker-wrap').style.display       = 'none';
+      document.getElementById('stocks-grid-wrap').style.display  = 'block';
+      document.body.style.height = 'auto';
+
+      const now = new Date();
+      document.getElementById('last-updated').textContent =
+        `Updated ${now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}` +
+        (FINNHUB_KEY ? '' : ' (simulated)');
+
+      const grid = document.getElementById('stocks-grid');
+      if (stockData.length === 0) {
+        grid.innerHTML = '<div class="status-msg">No stock data available.</div>';
+        return;
+      }
+      grid.innerHTML = stockData.map(s => {
+        const cls  = classFor(s.changePct);
+        const sign = s.changePct >= 0 ? '+' : '';
+        return `
+          <div class="stock-card">
+            <div class="sc-symbol">${s.symbol}</div>
+            <div class="sc-name">${s.name}</div>
+            <div class="sc-price">$${formatPrice(s.price)}</div>
+            <div class="sc-change">
+              <span class="badge ${cls}">${arrowFor(s.changePct)} ${sign}${s.change != null ? s.change.toFixed(2) : ''}</span>
+              <span class="badge ${cls}">${sign}${s.changePct != null ? s.changePct.toFixed(2) : ''}%</span>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // Boot
+    loadStocks();
+    setInterval(loadStocks, REFRESH_MS);
+  </script>
+</body>
+</html>

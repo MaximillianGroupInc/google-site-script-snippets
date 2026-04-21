@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Art of the Day</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Roboto:wght@300;400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #111;
+      height: auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border-radius: 12px;
+      max-width: 680px;
+      width: 100%;
+      color: #e5e5e5;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.4rem;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .header-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #c9a95a;
+      font-weight: 400;
+    }
+
+    .header-dept {
+      font-size: 0.72rem;
+      color: #777;
+      background: #2a2a2a;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .artwork-frame {
+      background: #0d0d0d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .artwork-img {
+      max-width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      display: block;
+      transition: opacity 0.4s;
+    }
+
+    .artwork-placeholder {
+      text-align: center;
+      color: #444;
+      padding: 3rem 1rem;
+    }
+
+    .artwork-placeholder .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+
+    .card-info { padding: 1.4rem 1.5rem 1.5rem; }
+
+    .artwork-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.3rem, 3.5vw, 2rem);
+      font-weight: 600;
+      color: #f5e6c8;
+      line-height: 1.25;
+      margin-bottom: 0.3rem;
+    }
+
+    .artwork-artist {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: #c9a95a;
+      margin-bottom: 0.8rem;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .meta-badge {
+      background: #2a2a2a;
+      color: #999;
+      font-size: 0.72rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    .artwork-description {
+      font-size: 0.9rem;
+      color: #aaa;
+      line-height: 1.7;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #c9a95a;
+      color: #111;
+      border: none;
+      padding: 0.5rem 1.1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #e0c070; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #3a3a3a;
+      color: #aaa;
+    }
+
+    .btn-outline:hover { background: #2a2a2a; color: #e5e5e5; }
+
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2px solid #333;
+      border-top-color: #c9a95a;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #555;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <span class="header-label">🖼️ Art of the Day</span>
+      <span class="header-dept" id="dept-label">The Metropolitan Museum of Art</span>
+    </div>
+
+    <div class="artwork-frame" id="artwork-frame">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Curating today's artwork…</span>
+      </div>
+    </div>
+
+    <div class="card-info" id="card-info" style="display:none">
+      <h2 class="artwork-title" id="art-title"></h2>
+      <div class="artwork-artist" id="art-artist"></div>
+      <div class="meta-row" id="meta-row"></div>
+      <p class="artwork-description" id="art-description"></p>
+      <div class="actions">
+        <button onclick="loadNextArtwork()">Next Artwork</button>
+        <a id="met-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-outline">View on Met Website</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // CONFIGURATION
+    // Uses The Metropolitan Museum of Art Collection API — free, no key required.
+    // API docs: https://metmuseum.github.io/
+    //
+    // DEPARTMENT_ID: change to explore different departments.
+    //   11 = European Paintings | 21 = Modern Art | 6 = Asian Art | 9 = Drawings
+    // ---------------------------------------------------------------------------
+    const DEPARTMENT_ID = 11; // European Paintings
+
+    let objectIds  = [];
+    let usedIds    = new Set();
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(str || '')));
+      return d.innerHTML;
+    }
+
+    function safeUrl(url) {
+      return /^https?:\/\//i.test(url) ? url : 'https://www.metmuseum.org';
+    }
+
+    async function init() {
+      try {
+        const res  = await fetch(
+          `https://collectionapi.metmuseum.org/public/collection/v1/objects?departmentIds=${DEPARTMENT_ID}&hasImages=true`
+        );
+        const data = await res.json();
+        objectIds  = data.objectIDs || [];
+        if (objectIds.length === 0) { showError(); return; }
+        // Deterministically pick today's starting artwork using a UTC day-of-year seed
+        const now = new Date();
+        const startOfYearUtc = Date.UTC(now.getUTCFullYear(), 0, 0);
+        const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+        const doy = Math.floor((todayUtc - startOfYearUtc) / 86400000);
+        const startIdx = doy % objectIds.length;
+        await loadArtworkByIndex(startIdx);
+      } catch (_) {
+        showError();
+      }
+    }
+
+    async function loadArtworkByIndex(idx) {
+      showLoading();
+      const id = objectIds[idx % objectIds.length];
+      usedIds.add(idx);
+      await fetchArtwork(id);
+    }
+
+    async function loadNextArtwork() {
+      if (objectIds.length === 0) return;
+      let attempts = 0;
+      while (attempts < 20) {
+        const idx = Math.floor(Math.random() * objectIds.length);
+        if (!usedIds.has(idx)) {
+          await loadArtworkByIndex(idx);
+          return;
+        }
+        attempts++;
+      }
+      usedIds.clear();
+      await loadArtworkByIndex(Math.floor(Math.random() * objectIds.length));
+    }
+
+    async function fetchArtwork(objectId) {
+      try {
+        const res  = await fetch(
+          `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectId}`
+        );
+        const art  = await res.json();
+
+        if (!art.primaryImageSmall && !art.primaryImage) {
+          // No image — skip to a random one
+          await loadNextArtwork();
+          return;
+        }
+
+        renderArtwork(art);
+      } catch (_) {
+        showError();
+      }
+    }
+
+    function renderArtwork(art) {
+      const imgSrc = art.primaryImageSmall || art.primaryImage;
+
+      // Artwork frame
+      const artworkFrame = document.getElementById('artwork-frame');
+      artworkFrame.innerHTML = '';
+
+      const img = document.createElement('img');
+      img.className = 'artwork-img';
+      img.src = imgSrc;
+      img.alt = art.title || 'Artwork image';
+      img.addEventListener('error', function () {
+        artworkFrame.innerHTML = `
+          <div class="artwork-placeholder">
+            <div class="icon">🎨</div>
+            <p>Image unavailable</p>
+          </div>`;
+      });
+      artworkFrame.appendChild(img);
+      // Title & artist
+      document.getElementById('art-title').textContent  = art.title  || 'Untitled';
+      document.getElementById('art-artist').textContent = art.artistDisplayName || 'Unknown Artist';
+
+      // Meta badges
+      const badges = [
+        art.objectDate,
+        art.medium,
+        art.dimensions,
+        art.culture,
+        art.classification,
+      ].filter(Boolean);
+      document.getElementById('meta-row').innerHTML = badges
+        .map(b => `<span class="meta-badge">${esc(b)}</span>`)
+        .join('');
+
+      // Description
+      const desc = [art.creditLine, art.repository].filter(Boolean).join(' · ');
+      document.getElementById('art-description').textContent = desc || '';
+
+      // Link
+      document.getElementById('met-link').href = safeUrl(art.objectURL);
+
+      document.getElementById('card-info').style.display = 'block';
+    }
+
+    function showLoading() {
+      document.getElementById('artwork-frame').innerHTML = `
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <span>Loading artwork…</span>
+        </div>`;
+      document.getElementById('card-info').style.display = 'none';
+    }
+
+    function showError() {
+      document.getElementById('artwork-frame').innerHTML = `
+        <div class="artwork-placeholder">
+          <div class="icon">🎨</div>
+          <p>Could not load artwork. Please check your connection.</p>
+        </div>`;
+      document.getElementById('card-info').style.display = 'none';
+    }
+
+    init();
+  </script>
+</body>
+</html>

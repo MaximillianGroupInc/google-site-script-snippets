@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quote of the Day</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;1,300&family=Roboto:wght@400;500&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.97);
+      border-radius: 16px;
+      padding: 2rem 2rem 1.5rem;
+      max-width: 620px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    }
+
+    .label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #764ba2;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .label::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 2px;
+      background: #764ba2;
+    }
+
+    .quote-mark {
+      font-size: 5rem;
+      color: #e9d8ff;
+      line-height: 0.6;
+      font-family: 'Merriweather', serif;
+      user-select: none;
+    }
+
+    .quote-text {
+      font-family: 'Merriweather', serif;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.8;
+      color: #1e1b2e;
+      margin: 0.6rem 0 1.4rem;
+    }
+
+    .author {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #764ba2;
+      text-align: right;
+    }
+
+    .author::before { content: '— '; }
+
+    .tags {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .tag {
+      background: #f3e8ff;
+      color: #7c3aed;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+
+    .actions {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    button:hover  { opacity: 0.88; }
+    button:active { transform: scale(0.97); }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e9d8ff;
+      border-top-color: #764ba2;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading { text-align: center; color: #9ca3af; padding: 2rem 0; }
+    .error   { color: #dc2626; font-size: 0.88rem; padding: 1rem 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="label">Quote of the Day</div>
+    <div id="content">
+      <div class="loading"><span class="spinner"></span>Loading today's quote…</div>
+    </div>
+    <div class="actions">
+      <button id="btn-new"   onclick="fetchQuote()">New Quote</button>
+      <button id="btn-share" onclick="shareQuote()">Copy &amp; Share</button>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // CONFIGURATION
+    // API: https://quotable.io  — free, no key required
+    // ---------------------------------------------------------------------------
+    const API = 'https://api.quotable.io/quotes/random?minLength=50&maxLength=220';
+
+    const FALLBACKS = [
+      { content: 'The only way to do great work is to love what you do.', author: 'Steve Jobs', tags: ['inspirational'] },
+      { content: 'In the middle of every difficulty lies opportunity.', author: 'Albert Einstein', tags: ['wisdom'] },
+      { content: 'It does not matter how slowly you go as long as you do not stop.', author: 'Confucius', tags: ['perseverance'] },
+      { content: "Life is what happens when you're busy making other plans.", author: 'John Lennon', tags: ['life'] },
+      { content: 'The future belongs to those who believe in the beauty of their dreams.', author: 'Eleanor Roosevelt', tags: ['inspirational'] },
+      { content: 'Strive not to be a success, but rather to be of value.', author: 'Albert Einstein', tags: ['wisdom'] },
+      { content: 'What you get by achieving your goals is not as important as what you become by achieving your goals.', author: 'Zig Ziglar', tags: ['goals'] },
+    ];
+
+    let currentQuote = null;
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(str)));
+      return d.innerHTML;
+    }
+
+    async function fetchQuote() {
+      document.getElementById('content').innerHTML =
+        '<div class="loading"><span class="spinner"></span>Loading…</div>';
+      try {
+        const res  = await fetch(API);
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+        currentQuote = Array.isArray(data) ? data[0] : data;
+        renderQuote(currentQuote);
+      } catch (_) {
+        // Fall back to curated list keyed by day-of-year for consistency
+        const _now = new Date();
+        const doy = Math.floor((Date.UTC(_now.getFullYear(), _now.getMonth(), _now.getDate()) - Date.UTC(_now.getFullYear(), 0, 0)) / 86400000);
+        currentQuote = FALLBACKS[doy % FALLBACKS.length];
+        renderQuote(currentQuote);
+      }
+    }
+
+    function renderQuote(q) {
+      const tagsHtml = (q.tags || [])
+        .map(t => `<span class="tag">${esc(t)}</span>`)
+        .join('');
+      document.getElementById('content').innerHTML = `
+        <div class="quote-mark">"</div>
+        <p class="quote-text">${esc(q.content)}</p>
+        <div class="author">${esc(q.author)}</div>
+        ${tagsHtml ? `<div class="tags">${tagsHtml}</div>` : ''}
+      `;
+    }
+
+    function shareQuote() {
+      if (!currentQuote) return;
+      const text = `"${currentQuote.content}" — ${currentQuote.author}`;
+      if (navigator.share) {
+        navigator.share({ text });
+      } else if (navigator.clipboard) {
+        navigator.clipboard
+          .writeText(text)
+          .then(() => alert('Quote copied to clipboard!'))
+          .catch(() => alert(`Copy failed. You can still copy/share this quote:\n\n${text}`));
+      } else {
+        alert(`Copy/share this quote:\n\n${text}`);
+      }
+    }
+
+    fetchQuote();
+  </script>
+</body>
+</html>

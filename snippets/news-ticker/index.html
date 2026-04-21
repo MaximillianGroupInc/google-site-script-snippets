@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News Ticker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* =========================================================
+       TICKER BAR — designed as a full-width horizontal strip
+       that embeds cleanly across the top or bottom of a page.
+       Height is fixed; change --ticker-height to resize.
+    ========================================================= */
+    :root {
+      --ticker-height: 44px;
+      --ticker-bg:     #1a1a1a;
+      --ticker-text:   #f5f5f5;
+      --label-bg:      #cc0000;
+      --label-text:    #fff;
+      --speed:         40s;   /* lower = faster */
+    }
+
+    body {
+      background: var(--ticker-bg);
+      overflow: hidden;
+      height: var(--ticker-height);
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .ticker-wrap {
+      width: 100%;
+      height: var(--ticker-height);
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+    }
+
+    .ticker-label {
+      flex-shrink: 0;
+      background: var(--label-bg);
+      color: var(--label-text);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+      z-index: 2;
+      box-shadow: 4px 0 10px rgba(0,0,0,0.4);
+    }
+
+    .ticker-body {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Fade edges */
+    .ticker-body::before,
+    .ticker-body::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 40px;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .ticker-body::before { left: 0;  background: linear-gradient(to right, var(--ticker-bg), transparent); }
+    .ticker-body::after  { right: 0; background: linear-gradient(to left,  var(--ticker-bg), transparent); }
+
+    .ticker-scroll {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: ticker-move var(--speed) linear infinite;
+      will-change: transform;
+    }
+
+    .ticker-scroll:hover { animation-play-state: paused; }
+
+    @keyframes ticker-move {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .news-item {
+      display: inline-flex;
+      align-items: center;
+      color: var(--ticker-text);
+      font-size: 0.82rem;
+      font-weight: 400;
+      cursor: pointer;
+      padding: 0 1.2rem;
+      gap: 0.5rem;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .news-item:hover { color: #fbbf24; }
+
+    .news-divider {
+      color: #555;
+      font-size: 0.7rem;
+      padding: 0 0.3rem;
+      user-select: none;
+    }
+
+    /* =========================================================
+       Full-page card mode — shown when COMPACT_MODE = false
+    ========================================================= */
+    body.card-mode {
+      background: #111;
+      height: auto;
+      overflow: auto;
+    }
+
+    .news-card-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1rem;
+      display: none;
+    }
+
+    .news-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+      text-decoration: none;
+      color: #e5e5e5;
+      border: 1px solid #2a2a2a;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .news-card:hover { border-color: #555; background: #252525; }
+
+    .news-card-num {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #333;
+      flex-shrink: 0;
+      line-height: 1;
+      padding-top: 0.1rem;
+    }
+
+    .news-card-title { font-size: 0.95rem; font-weight: 500; line-height: 1.45; }
+
+    .news-card-source {
+      font-size: 0.72rem;
+      color: #666;
+      margin-top: 0.3rem;
+    }
+
+    .card-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .card-header-bar .title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #cc0000;
+    }
+
+    .refresh-btn {
+      background: #2a2a2a;
+      border: 1px solid #333;
+      color: #aaa;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-family: 'Roboto', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .refresh-btn:hover { background: #333; color: #e5e5e5; }
+
+    .status-msg { text-align: center; color: #555; padding: 2rem; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <!-- TICKER BAR (default mode) -->
+  <div class="ticker-wrap" id="ticker-wrap">
+    <div class="ticker-label">
+      <span>📰</span> BREAKING
+    </div>
+    <div class="ticker-body">
+      <div class="ticker-scroll" id="ticker-scroll">
+        <span class="news-item">Loading latest headlines…</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD LIST (optional — set COMPACT_MODE = false) -->
+  <div class="news-card-wrap" id="news-card-wrap">
+    <div class="card-header-bar">
+      <span class="title">📰 Latest Headlines</span>
+      <button class="refresh-btn" onclick="loadNews()">↻ Refresh</button>
+    </div>
+    <div id="news-cards"></div>
+  </div>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // CONFIGURATION
+    // ---------------------------------------------------------------------------
+
+    // COMPACT_MODE = true  → shows the slim ticker bar (best for page headers/footers)
+    // COMPACT_MODE = false → shows a full card-list view (better for a page section)
+    const COMPACT_MODE = true;
+
+    // RSS feed URL to display. Change to any public RSS feed.
+    // Recommendations:
+    //   Google News (US):    https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en
+    //   Reuters:             https://feeds.reuters.com/reuters/topNews
+    //   BBC News:            http://feeds.bbci.co.uk/news/rss.xml
+    //   AP News:             https://apnews.com/index.rss
+    const RSS_FEED_URL = 'https://feeds.bbci.co.uk/news/rss.xml';
+
+    // rss2json API key (optional) — free tier works without a key but at lower rate limit.
+    // Get your key at https://rss2json.com
+    const RSS2JSON_KEY = '';
+
+    // Scroll speed in seconds — lower = faster (only used in COMPACT_MODE)
+    const TICKER_SPEED = '40s';
+
+    // Number of headlines to load
+    const MAX_ITEMS = 20;
+
+    // ---------------------------------------------------------------------------
+
+    let headlines = [];
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.appendChild(document.createTextNode(String(str || '')));
+      return d.innerHTML;
+    }
+
+    // Escape for HTML attribute values (escapes &, ", ', <, > in one pass)
+    const ATTR_MAP = { '&':'&amp;', '"':'&quot;', "'": '&#39;', '<':'&lt;', '>':'&gt;' };
+    function escAttr(str) {
+      return String(str || '').replace(/[&"'<>]/g, c => ATTR_MAP[c]);
+    }
+
+    function safeUrl(url) {
+      // Only allow http/https links
+      return /^https?:\/\//i.test(url) ? url : '#';
+    }
+
+    function buildApiUrl() {
+      const base = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_FEED_URL)}&count=${MAX_ITEMS}`;
+      return RSS2JSON_KEY ? `${base}&api_key=${RSS2JSON_KEY}` : base;
+    }
+
+    async function loadNews() {
+      try {
+        const res  = await fetch(buildApiUrl());
+        const data = await res.json();
+        if (data.status !== 'ok' || !data.items || data.items.length === 0) throw new Error('No items');
+        headlines = data.items.map(item => ({
+          title:  item.title,
+          link:   item.link,
+          source: item.author || (data.feed && data.feed.title) || 'News'
+        }));
+      } catch (_) {
+        headlines = [
+          { title: 'Could not load news. Check RSS_FEED_URL and network connection.', link: '#', source: '' },
+          { title: 'Edit this file and verify your RSS feed URL is correct.', link: '#', source: '' },
+          { title: 'You can also use the Apps Script version in /apps-script/news-ticker/ to bypass CORS.', link: '#', source: '' }
+        ];
+      }
+
+      if (COMPACT_MODE) renderTicker();
+      else renderCards();
+    }
+
+    function renderTicker() {
+      if (headlines.length === 0) return;
+
+      // Duplicate items so the animation loops seamlessly
+      const items = [...headlines, ...headlines];
+      const html  = items.map((item, i) => {
+        const divider = `<span class="news-divider">◆</span>`;
+        const href    = safeUrl(item.link);
+        const anchor  = href !== '#'
+          ? `<a class="news-item" href="${escAttr(href)}" target="_blank" rel="noopener noreferrer">${esc(item.title)}</a>`
+          : `<span class="news-item">${esc(item.title)}</span>`;
+        return (i > 0 ? divider : '') + anchor;
+      }).join('');
+
+      const scroll = document.getElementById('ticker-scroll');
+      scroll.innerHTML = html;
+
+      // Adjust animation speed
+      document.documentElement.style.setProperty('--speed', TICKER_SPEED);
+    }
+
+    function renderCards() {
+      document.body.classList.add('card-mode');
+      document.getElementById('ticker-wrap').style.display  = 'none';
+      document.getElementById('news-card-wrap').style.display = 'block';
+      document.body.style.height = 'auto';
+
+      const container = document.getElementById('news-cards');
+      if (headlines.length === 0) {
+        container.innerHTML = '<div class="status-msg">No headlines found.</div>';
+        return;
+      }
+      container.innerHTML = headlines.map((item, i) => {
+        const href = safeUrl(item.link);
+        const cardBody = `
+          <div class="news-card-num">${String(i + 1).padStart(2,'0')}</div>
+          <div>
+            <div class="news-card-title">${esc(item.title)}</div>
+            <div class="news-card-source">${esc(item.source)}</div>
+          </div>
+        `;
+        return href !== '#'
+          ? `<a class="news-card" href="${escAttr(href)}" target="_blank" rel="noopener noreferrer">${cardBody}</a>`
+          : `<div class="news-card">${cardBody}</div>`;
+      }).join('');
+    }
+
+    // Initialise
+    loadNews();
+
+    // Refresh headlines every 10 minutes
+    setInterval(loadNews, 10 * 60 * 1000);
+  </script>
+</body>
+</html>
