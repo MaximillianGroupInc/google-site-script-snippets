@@ -71,7 +71,6 @@ function getHeadlines() {
 
     // Handle both RSS 2.0 (<rss><channel><item>) and Atom (<feed><entry>)
     var items = [];
-    var ns    = root.getNamespace();
 
     if (root.getName() === 'rss') {
       var channel = root.getChild('channel');
