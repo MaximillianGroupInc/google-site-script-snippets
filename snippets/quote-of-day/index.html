@@ -212,6 +212,8 @@
           .writeText(text)
           .then(() => alert('Quote copied to clipboard!'))
           .catch(() => alert(`Copy failed. You can still copy/share this quote:\n\n${text}`));
+      } else {
+        alert(`Copy/share this quote:\n\n${text}`);
       }
     }
 
